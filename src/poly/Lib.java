@@ -112,7 +112,7 @@ public class Lib {
 
     RobotInfo[] currentRoundRobots =  new RobotInfo[0];
 
-    public RobotInfo[] getRobots(){
+   /* public RobotInfo[] getRobots(){
         roundNum = rc.getRoundNum();
         if(currentRoundRobots.length == 0 || lastRoundNum < roundNum){
             currentRoundRobots = sort(rc.senseNearbyRobots());
@@ -576,7 +576,7 @@ public class Lib {
             }
         }
         return items;
-    }
+    }*/
 
 
 }
