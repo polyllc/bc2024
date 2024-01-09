@@ -1,6 +1,6 @@
 package poly;
 
-
+import battlecode.common.*;
 public class Duck {
     RobotController rc;
     Lib lib;
@@ -11,7 +11,7 @@ public class Duck {
         lib = new Lib(rc);
     }
 
-    public void takeTurn(){
+    public void takeTurn() throws GameActionException{
 
     }
 }

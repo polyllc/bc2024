@@ -202,7 +202,7 @@ public class Navigation {
 
                 }
                 else {
-                    MapInfo mapInfo = rc.senseMapInfo(loc);
+                    /*MapInfo mapInfo = rc.senseMapInfo(loc);
                     if(mapInfo.getCurrentDirection() != Direction.CENTER){
 
                     }
@@ -211,7 +211,8 @@ public class Navigation {
                     }
                     else {
                         valid = true;
-                    }
+                    }*/
+                    valid = true; //todo update this code for current battlecode
                 }
                 // boolean valid = rc.canSenseLocation(loc) && !rc.isLocationOccupied(loc) && rc.senseMapInfo(loc).getCurrentDirection() == Direction.CENTER;
                 validLocs[x][y] = valid;
