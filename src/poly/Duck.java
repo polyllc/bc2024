@@ -4,7 +4,7 @@ package poly;
 public class Duck {
     RobotController rc;
     Lib lib;
-    public Duck(RobotPlayer robot){
+    public Duck(RobotController robot){
         rc = robot;
         nav = new Navigation(rc);
         lib = new Lib(rc);

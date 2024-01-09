@@ -41,7 +41,7 @@ public strictfp class RobotPlayer {
     @SuppressWarnings("unused")
     public static void run(RobotController rc) throws GameActionException {
 
-        RobotPlayer rc = rc;
+        RobotController rc = rc;
         Duck duck = null;
         duck = new Duck(rc);
 
