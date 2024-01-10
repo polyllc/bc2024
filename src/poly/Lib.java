@@ -15,6 +15,7 @@ public class Lib {
 
     int roundNum;
     int lastRoundNum;
+    MapLocation spawnLocations[];
 
 
     static MapLocation noLoc = new MapLocation(256,256);
@@ -23,6 +24,7 @@ public class Lib {
         rc = robot;
         roundNum = rc.getRoundNum();
         lastRoundNum = roundNum--;
+        spawnLocations = rc.getAllySpawnLocations();
     }
     //pretty much any useful function or variables go here
     static final Direction[] directions = {
@@ -112,7 +114,7 @@ public class Lib {
 
     RobotInfo[] currentRoundRobots =  new RobotInfo[0];
 
-   /* public RobotInfo[] getRobots(){
+   public RobotInfo[] getRobots(){
         roundNum = rc.getRoundNum();
         if(currentRoundRobots.length == 0 || lastRoundNum < roundNum){
             currentRoundRobots = sort(rc.senseNearbyRobots());
@@ -186,7 +188,7 @@ public class Lib {
     }
 
 
-    Direction[] startDirList(int index, int offset){
+    public Direction[] startDirList(int index, int offset){
         Direction[] dirs = new Direction[8];
         index = (index + offset) % 8;
         for(Direction dir : directions){
@@ -199,7 +201,7 @@ public class Lib {
         return dirs;
     }
 
-    Direction[] reverse(Direction[] dirs){ //meant for the hq
+    public Direction[] reverse(Direction[] dirs){ //meant for the hq
         if(getQuadrant() == 1 || getQuadrant() == 4){
             Direction[] newDirs = new Direction[dirs.length];
             int j = dirs.length-1;
@@ -212,7 +214,7 @@ public class Lib {
         return dirs;
     }
 
-    int dirToIndex(Direction dir){
+    public int dirToIndex(Direction dir){
         switch(dir){
             case NORTH: return 0;
             case NORTHEAST: return 1;
@@ -225,332 +227,14 @@ public class Lib {
         }
         return 0;
     }
-
-    MapLocation[] islandLocs;
-
-    MapLocation[] getIslandLocs() throws GameActionException {
-        if(islandLocs == null){
-            int[] idx = rc.senseNearbyIslands();
-            int i = 0;
-            if(idx.length > 0){
-                islandLocs = getFreeIslands(idx);
-            }
-        }
-        return islandLocs;
-    }
-
-    MapLocation[] getFreeIslands(int[] indexes) throws GameActionException {
-        MapLocation[] locs = new MapLocation[1];
-        locs[0] = noLoc;
-        for(int i = 0; i < indexes.length; i++){
-            locs = rc.senseNearbyIslandLocations(indexes[0]);
-            if(rc.canSenseLocation(locs[0])){
-                if(rc.senseTeamOccupyingIsland(indexes[i]) != rc.getTeam()){
-                    i = indexes.length+1;
-                }
-            }
-            if(i == indexes.length-1){
-                locs = new MapLocation[0];
-            }
-        }
-        return locs;
-    }
-
-    int getIsland() throws GameActionException {
-        int index = 0;
-        int[] indexes = rc.senseNearbyIslands();
-        for (int j : indexes) {
-            MapLocation[] locs = rc.senseNearbyIslandLocations(indexes[0]);
-            if (rc.canSenseLocation(locs[0])) {
-                if (rc.senseTeamOccupyingIsland(j) != rc.getTeam()) {
-                    return j;
-                }
-                else {
-                    if(!contains(islandsTaken, j)){
-                        addIsland(j);
-                    }
-                }
-            } else if (!contains(islandsTaken, j)) {
-                return j;
-            }
-        }
-        return index;
-    }
-
-    void addIsland(int i){
-        for(int j = 0; j < islandsTaken.length; j++){
-            if(islandsTaken[j] == 0){
-                islandsTaken[j] = i;
-                break;
-            }
-        }
-    }
+/*
 
     Direction educatedGuess(MapLocation hq){
         return rc.getLocation().directionTo(new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2));
     }
+*/
 
-    MapLocation getEnemyBase() throws GameActionException {
-        if(!new MapLocation(rc.readSharedArray(0), rc.readSharedArray(1)).equals(new MapLocation(0,0))){
-            return new MapLocation(rc.readSharedArray(0), rc.readSharedArray(1));
-        }
-        return noLoc;
-    }
-
-    MapLocation getEnemyBase(int index) throws GameActionException {
-        if(!new MapLocation(rc.readSharedArray((index * 2)), rc.readSharedArray(1+(index*2))).equals(new MapLocation(0,0))){
-            return new MapLocation(rc.readSharedArray((index * 2)), rc.readSharedArray(1+(index*2)));
-        }
-        return noLoc;
-    }
-
-    boolean getEnemyBase(MapLocation m) throws GameActionException {
-        if(m.equals(getEnemyBase(0))){
-            return true;
-        }
-        else if(m.equals(getEnemyBase(1))){
-            return true;
-        }
-        else if(m.equals(getEnemyBase(2))){
-            return true;
-        }
-        else if(m.equals(getEnemyBase(3))){
-            return true;
-        }
-        return false;
-
-    }
-
-
-    MapLocation getNearestEnemy() throws GameActionException {
-        MapLocation currentLowest = getEnemyBase(0);
-        for(int i = 0; i < 4; i++){
-            if(!getEnemyBase(i).equals(noLoc)){
-                MapLocation c = getEnemyBase(i);
-                if(currentLowest.distanceSquaredTo(rc.getLocation()) > c.distanceSquaredTo(rc.getLocation())){
-                    currentLowest = getEnemyBase(i);
-                }
-            }
-        }
-        return currentLowest;
-    }
-
-    void writeEnemyHQ(MapLocation enemy) throws GameActionException {
-        if(rc.canWriteSharedArray(0,0)) {
-            if (getEnemyBase(0) == noLoc) {
-                rc.writeSharedArray(0,enemy.x);
-                rc.writeSharedArray(1,enemy.y);
-            }
-            else if (getEnemyBase(1) == noLoc) {
-                rc.writeSharedArray(2,enemy.x);
-                rc.writeSharedArray(3,enemy.y);
-            }
-            else if (getEnemyBase(2) == noLoc) {
-                rc.writeSharedArray(4,enemy.x);
-                rc.writeSharedArray(5,enemy.y);
-            }
-            else if (getEnemyBase(3) == noLoc) {
-                rc.writeSharedArray(6,enemy.x);
-                rc.writeSharedArray(7,enemy.y);
-            }
-        }
-    }
-
-    void clearEnemyHQ(MapLocation hq) throws GameActionException {
-        if(rc.canWriteSharedArray(0,0)) {
-            if(getEnemyBase(0).equals(hq)){
-                rc.writeSharedArray(0,0);
-                rc.writeSharedArray(1,0);
-            }
-            else if(getEnemyBase(1).equals(hq)){
-                rc.writeSharedArray(2,0);
-                rc.writeSharedArray(3,0);
-            }
-            else if(getEnemyBase(2).equals(hq)){
-                rc.writeSharedArray(4,0);
-                rc.writeSharedArray(5,0);
-            }
-            else if(getEnemyBase(3).equals(hq)){
-                rc.writeSharedArray(6,0);
-                rc.writeSharedArray(7,0);
-            }
-        }
-    }
-
-
-    boolean onIsland(int index) throws GameActionException {
-        if(contains(rc.senseNearbyIslands(), index)) {
-            MapLocation[] locs = rc.senseNearbyIslandLocations(index);
-            for (MapLocation loc : locs) {
-                if (rc.getLocation().equals(loc)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    MapLocation getBase() throws GameActionException {
-        if(!new MapLocation(rc.readSharedArray(32), rc.readSharedArray(33)).equals(new MapLocation(0,0))){
-            return new MapLocation(rc.readSharedArray(32), rc.readSharedArray(33));
-        }
-        return noLoc;
-    }
-
-    MapLocation getBase(int index) throws GameActionException {
-        if(!new MapLocation(rc.readSharedArray((index * 2)+32), rc.readSharedArray(33+(index*2))).equals(new MapLocation(0,0))){
-            return new MapLocation(rc.readSharedArray((index * 2)+32), rc.readSharedArray(33+(index*2)));
-        }
-        return noLoc;
-    }
-
-
-    void writeHQ(MapLocation hq) throws GameActionException {
-        if(rc.canWriteSharedArray(0,0)) {
-            if (getBase(0) == noLoc) {
-                rc.writeSharedArray(32,hq.x);
-                rc.writeSharedArray(33,hq.y);
-            }
-            else if (getBase(1) == noLoc) {
-                rc.writeSharedArray(34,hq.x);
-                rc.writeSharedArray(35,hq.y);
-            }
-            else if (getBase(2) == noLoc) {
-                rc.writeSharedArray(36,hq.x);
-                rc.writeSharedArray(37,hq.y);
-            }
-            else if (getBase(3) == noLoc) {
-                rc.writeSharedArray(38,hq.x);
-                rc.writeSharedArray(39,hq.y);
-            }
-        }
-    }
-
-    MapLocation getNearestHQ() throws GameActionException {
-        MapLocation currentLowest = getBase(0);
-        for(int i = 0; i < 4; i++){
-            if(!getBase(i).equals(noLoc)){
-                MapLocation c = getBase(i);
-                if(currentLowest.distanceSquaredTo(rc.getLocation()) > c.distanceSquaredTo(rc.getLocation())){
-                    currentLowest = getBase(i);
-                }
-            }
-        }
-        return currentLowest;
-    }
-
-    int numHq() throws GameActionException {
-        return (getBase(0) != noLoc ? 1 : 0) + (getBase(1) != noLoc ? 1 : 0) + (getBase(2) != noLoc ? 1 : 0) + (getBase(3) != noLoc ? 1 : 0);
-    }
-
-    MapLocation[] getHqs() throws GameActionException {
-        MapLocation[] locs = new MapLocation[numHq()];
-        for(int i = 0; i < locs.length; i++){
-            locs[i] = getBase(i);
-        }
-        return locs;
-    }
-
-    void setMana(MapLocation mana) throws GameActionException {
-        if(rc.canWriteSharedArray(0,0)) {
-            if (getMana(0) == noLoc) {
-                rc.writeSharedArray(40,mana.x);
-                rc.writeSharedArray(41,mana.y);
-            }
-            else if (getMana(1) == noLoc) {
-                rc.writeSharedArray(42,mana.x);
-                rc.writeSharedArray(43,mana.y);
-            }
-        }
-    }
-
-    MapLocation getMana(int index) throws GameActionException {
-        if(!new MapLocation(rc.readSharedArray((index * 2)+40), rc.readSharedArray(40+(index*2))).equals(new MapLocation(0,0))){
-            return new MapLocation(rc.readSharedArray((index * 2)+40), rc.readSharedArray(40+(index*2)));
-        }
-        return noLoc;
-    }
-
-    MapLocation getMana() throws GameActionException {
-        return new MapLocation(rc.readSharedArray(40), rc.readSharedArray(41));
-    }
-
-    void clearMana(MapLocation hq) throws GameActionException {
-        if(rc.canWriteSharedArray(0,0)) {
-            if(getMana(0).equals(hq)){
-                rc.writeSharedArray(0,0);
-                rc.writeSharedArray(1,0);
-            }
-            else if(getMana(1).equals(hq)){
-                rc.writeSharedArray(2,0);
-                rc.writeSharedArray(3,0);
-            }
-            else if(getMana(2).equals(hq)){
-                rc.writeSharedArray(4,0);
-                rc.writeSharedArray(5,0);
-            }
-            else if(getMana(3).equals(hq)){
-                rc.writeSharedArray(6,0);
-                rc.writeSharedArray(7,0);
-            }
-        }
-    }
-
-    void setAda(MapLocation ada) throws GameActionException {
-        if(rc.canWriteSharedArray(0,0)) {
-            if (getAda(0) == noLoc) {
-                rc.writeSharedArray(44,ada.x);
-                rc.writeSharedArray(45,ada.y);
-            }
-            else if (getAda(1) == noLoc) {
-                rc.writeSharedArray(46,ada.x);
-                rc.writeSharedArray(47,ada.y);
-            }
-        }
-    }
-
-    MapLocation getAda() throws GameActionException {
-        return new MapLocation(rc.readSharedArray(44), rc.readSharedArray(45));
-    }
-    MapLocation getAda(int index) throws GameActionException {
-        if(!new MapLocation(rc.readSharedArray((index * 2)+44), rc.readSharedArray(45+(index*2))).equals(new MapLocation(0,0))){
-            return new MapLocation(rc.readSharedArray((index * 2)+44), rc.readSharedArray(45+(index*2)));
-        }
-        return noLoc;
-    }
-
-    void clearAda(MapLocation hq) throws GameActionException {
-        if(rc.canWriteSharedArray(0,0)) {
-            if(getAda(0).equals(hq)){
-                rc.writeSharedArray(0,0);
-                rc.writeSharedArray(1,0);
-            }
-            else if(getAda(1).equals(hq)){
-                rc.writeSharedArray(2,0);
-                rc.writeSharedArray(3,0);
-            }
-            else if(getAda(2).equals(hq)){
-                rc.writeSharedArray(4,0);
-                rc.writeSharedArray(5,0);
-            }
-            else if(getAda(3).equals(hq)){
-                rc.writeSharedArray(6,0);
-                rc.writeSharedArray(7,0);
-            }
-        }
-    }
-
-    void updateHQNum() throws GameActionException {
-        if(rc.canWriteSharedArray(0,0)) {
-            rc.writeSharedArray(63, rc.readSharedArray(63) + 1);
-        }
-    }
-
-    int getHQNum() throws GameActionException {
-        return rc.readSharedArray(63);
-    }
-
-    public RobotInfo[] sort(RobotInfo[] items){ //dir == true? smallest to largest, vice versa
+    public RobotInfo[] sort(RobotInfo[] items){ //todo, lukas write this in a more efficient sorting method pretty please
         if(items.length > 0) {
             RobotInfo lowest = items[0];
             int lowestIndex = 0;
@@ -576,7 +260,6 @@ public class Lib {
             }
         }
         return items;
-    }*/
-
+    }
 
 }
