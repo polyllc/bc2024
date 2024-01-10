@@ -4,7 +4,6 @@ import battlecode.common.*;
 
 
 
-//todo, reimplement for this year
 public class Lib {
 
     RobotController rc;
@@ -150,7 +149,7 @@ public class Lib {
         return false;
     }
 
-    boolean detectCorner(Direction dirGoing) throws GameActionException { //todo, update
+    boolean detectCorner(Direction dirGoing) throws GameActionException { 
         if(rc.getLocation().equals(new MapLocation(rc.getMapWidth() - 1, rc.getMapHeight() - 1)) ||
                 rc.getLocation().equals(new MapLocation(0, rc.getMapHeight() - 1)) ||
                 rc.getLocation().equals(new MapLocation(rc.getMapWidth() - 1, 0)) ||
@@ -234,7 +233,9 @@ public class Lib {
     }
 */
 
-    public RobotInfo[] sort(RobotInfo[] items){ //todo, lukas write this in a more efficient sorting method pretty please
+
+    //doesn't actually sort anything, but what it does instead is put up the lowest health robot on the top
+    public RobotInfo[] sort(RobotInfo[] items){
         if(items.length > 0) {
             RobotInfo lowest = items[0];
             int lowestIndex = 0;
@@ -260,6 +261,42 @@ public class Lib {
             }
         }
         return items;
+    }
+
+    //senses if a tile is surrounded by water in a 3x3 area, anything larger, no dice (should probably upgrade to a 5x5 one day, lukas you want to do that?)
+    public boolean surroundedByWater(MapLocation loc) throws GameActionException {
+        if(rc.canSenseLocation(loc)) {
+            if (rc.senseMapInfo(loc).isWater()) {
+                return true;
+            }
+            else {
+                for(Direction dir : directions){
+                    if(rc.canSenseLocation(loc.add(dir))){
+                        if(!rc.senseMapInfo(loc.add(dir)).isWater()){
+                            return false; // if there is an opening in the water, then go
+                        }
+                    }
+                    else { //since we can't sense the location, we can't be sure that it is surrounded
+                        return false;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public FlagInfo[] getNearestFlags(MapLocation loc) throws GameActionException {
+        FlagInfo[] flagInfos = rc.senseNearbyFlags(-1);
+        if(flagInfos.length > 0){
+            for(FlagInfo flag : flagInfos){
+                if(!flag.isPickedUp()){
+                    if(flag.getTeam() != rc.getTeam()){
+                        return new FlagInfo[]{flag};
+                    }
+                }
+            }
+        }
+        return new FlagInfo[]{};
     }
 
 }
