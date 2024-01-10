@@ -34,16 +34,14 @@ public class Navigation {
         return false;
     }
 
+    //use this when wanting to go a certain direction, useful for randomly moving about
     boolean goTo(Direction dir) throws GameActionException {
         Direction [] toTry;
         if (Math.random() < 0.5) {
-            Direction [] temp = {dir, dir.rotateLeft(), dir.rotateRight(), dir.rotateLeft().rotateLeft(), dir.rotateRight().rotateRight()};
-            toTry = temp;
+            toTry = new Direction[]{dir, dir.rotateLeft(), dir.rotateRight(), dir.rotateLeft().rotateLeft(), dir.rotateRight().rotateRight()};
         }
         else {
-            Direction[] temp = {dir, dir.rotateRight(), dir.rotateLeft(), dir.rotateRight().rotateRight(),dir.rotateLeft().rotateLeft()};
-            toTry = temp;
-            toTry = temp;
+            toTry = new Direction[]{dir, dir.rotateRight(), dir.rotateLeft(), dir.rotateRight().rotateRight(),dir.rotateLeft().rotateLeft()};
         }
         for (Direction d : toTry){
             if(tryMove(d))
@@ -75,6 +73,7 @@ public class Navigation {
     }
 
     // navigate towards a particular location
+    // we use this function for moving to a specific location
     boolean goTo(MapLocation destination, boolean avoidBugNav) throws GameActionException {
         if (!(rc.isMovementReady()) || destination == null) return false;
         if (useBugNav && !avoidBugNav) {
@@ -202,17 +201,8 @@ public class Navigation {
 
                 }
                 else {
-                    /*MapInfo mapInfo = rc.senseMapInfo(loc);
-                    if(mapInfo.getCurrentDirection() != Direction.CENTER){
-
-                    }
-                    else if(!mapInfo.isPassable()){
-
-                    }
-                    else {
-                        valid = true;
-                    }*/
-                    valid = true; //todo update this code for current battlecode
+                    MapInfo mapInfo = rc.senseMapInfo(loc);
+                    valid = !mapInfo.isPassable();
                 }
                 // boolean valid = rc.canSenseLocation(loc) && !rc.isLocationOccupied(loc) && rc.senseMapInfo(loc).getCurrentDirection() == Direction.CENTER;
                 validLocs[x][y] = valid;
