@@ -14,6 +14,7 @@ public class Duck {
     MapLocation locationGoing = Lib.noLoc;
 
     MapLocation spawnLocation = Lib.noLoc;
+    MapLocation crumbPlace = Lib.noLoc;
 
     SkillType duckSkill; //the skill that the duck is supposed to level up
     static final Random rng = new Random(6147);
@@ -30,10 +31,13 @@ public class Duck {
             // Pick a random spawn location to attempt spawning in.
             MapLocation randomLoc = lib.spawnLocations[rng.nextInt(lib.spawnLocations.length)];
             // for now this is random, but in the future, we spawn where it is most needed
-            for(Direction dir : lib.startDirList(lib.dirToIndex(rc.getLocation().directionTo(lib.mapCenter())), 0)) {
-                if (rc.canSpawn(rc.getLocation().add(dir))) rc.spawn(rc.getLocation().add(dir));
-                spawnLocation = rc.getLocation().add(dir);
-                directionGoing = rc.getLocation().directionTo(lib.mapCenter());
+            for(Direction dir : lib.startDirList(lib.dirToIndex(randomLoc.directionTo(lib.mapCenter())), 0)) {
+                if (rc.canSpawn(randomLoc.add(dir))) {
+                    rc.spawn(randomLoc.add(dir));
+                    spawnLocation = randomLoc.add(dir);
+                    directionGoing = randomLoc.add(dir).directionTo(lib.mapCenter());
+                    break;
+                }
             }
         }
         else{
@@ -41,14 +45,38 @@ public class Duck {
             if(directionGoing == Direction.CENTER){
                 //we don't want it to not do anything, but most likely that won't happen for now
             }
+
+            MapLocation[] crumbs = rc.senseNearbyCrumbs(20);
+            if(crumbs.length > 0){
+                crumbPlace = crumbs[0];
+                locationGoing = crumbs[0];
+            }
+            if(crumbPlace == locationGoing){
+                if(rc.canSenseLocation(crumbPlace)){
+                    if(rc.senseMapInfo(crumbPlace).getCrumbs() == 0){
+                        crumbPlace = Lib.noLoc;
+                        locationGoing = Lib.noLoc;
+                        directionGoing = Lib.directions[rng.nextInt(8)];
+                    }
+                }
+            }
+
+            move();
+            rc.setIndicatorString(String.valueOf(directionGoing));
+        }
+        if(rc.getRoundNum() > 200){
+            rc.resign();
         }
     }
 
     void move() throws GameActionException {
-        if(locationGoing != Lib.noLoc) {
+        if(locationGoing == Lib.noLoc) {
             if (directionGoing != Direction.CENTER) {
-                nav.tryMove(directionGoing);
+                nav.goTo(directionGoing);
             }
+        }
+        else{
+            nav.goTo(locationGoing);
         }
     }
 }
