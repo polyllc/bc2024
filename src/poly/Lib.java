@@ -2,10 +2,6 @@ package poly;
 
 import battlecode.common.*;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
 
 
 //todo, reimplement for this year
@@ -71,6 +67,10 @@ public class Lib {
             }
         }
         return 1;
+    }
+
+    public MapLocation mapCenter(){
+        return  new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2);
     }
 
     public int getQuadrant(MapLocation m){
