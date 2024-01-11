@@ -6,3 +6,6 @@ Index 4: Enemy Flag Location 3 X
 Index 5: Enemy Flag Location 3 Y
 Index 6: Enemy Flag Location 4 X
 Index 7: Enemy Flag Location 4 Y
+Index 8: Enemy Ducks near our flags (boolean)
+Index 9: Enemy Ducks near our flags X
+Index 10: Enemy Ducks near our flags Y
