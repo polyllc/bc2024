@@ -6,7 +6,6 @@
 - keep an attack duck near every spawn location
 - announce when enemies nearby the flag
 - place down traps!
-- put the flags in a good spot (meaning the edges or the corners)
 - spawn all of the ducks on first round
 - once set up is done, make sure all of the ducks spread out around the dam
 

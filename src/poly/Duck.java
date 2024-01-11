@@ -2,7 +2,8 @@ package poly;
 
 import battlecode.common.*;
 
-import javax.swing.*;
+
+import java.util.Arrays;
 import java.util.Random;
 
 public class Duck {
@@ -49,14 +50,17 @@ public class Duck {
 
             // Pick a random spawn location to attempt spawning in.
             MapLocation randomLoc = lib.spawnLocations[rng.nextInt(lib.spawnLocations.length)];
+         //   System.out.println(Arrays.toString(lib.spawnLocations));
             // for now this is random, but in the future, we spawn where it is most needed
-            for(Direction dir : lib.startDirList(lib.dirToIndex(randomLoc.directionTo(lib.mapCenter())), 0)) {
-                if (rc.canSpawn(randomLoc.add(dir))) {
-                    rc.spawn(randomLoc.add(dir));
-                    spawnLocation = randomLoc.add(dir);
-                    directionGoing = randomLoc.add(dir).directionTo(lib.mapCenter());
-                    job = Jobs.IDLING;
-                    break;
+            for(MapLocation loc : lib.spawnLocations) {
+                for (Direction dir : Lib.directions) {
+                    if (rc.canSpawn(loc.add(dir))) {
+                        rc.spawn(loc.add(dir));
+                        spawnLocation = loc.add(dir);
+                        directionGoing = loc.add(dir).directionTo(lib.mapCenter());
+                        job = Jobs.IDLING;
+                        break;
+                    }
                 }
             }
         }
@@ -75,18 +79,19 @@ public class Duck {
                 }
 
                 if(rc.getRoundNum() > 200){
-                    FlagInfo[] nearestFlags = lib.getNearestFlags(rc.getLocation());
-                    if(nearestFlags.length > 0){ //currently the array is just 1 length, so we can just grab the first one
-                        locationGoing = nearestFlags[0].getLocation();
-                        job = Jobs.GETTINGFLAG;
-                        flagCarrierIndex = lib.getNextClearFlagIndex(); //we pray we hope, this will never be 0! (0, not 1)
-                    }
-
                     MapLocation nearestFlagCarrier = lib.getNearestFlagCarrier();
                     if(!nearestFlagCarrier.equals(Lib.noLoc) && !nearestFlagCarrier.equals(Lib.noFlag)){
                         job = Jobs.GUARDINGFLAGHOLDER;
                         flagCarrierIndex = lib.getFlagIndex(nearestFlagCarrier);
                         locationGoing = nearestFlagCarrier;
+                    }
+
+                    FlagInfo[] nearestFlags = lib.getNearestFlags(rc.getLocation());
+                    System.out.println(Arrays.toString(nearestFlags));
+                    if(nearestFlags.length > 0){ //currently the array is just 1 length, so we can just grab the first one
+                        locationGoing = nearestFlags[0].getLocation();
+                        job = Jobs.GETTINGFLAG;
+                        flagCarrierIndex = lib.getNextClearFlagIndex(); //we pray we hope, this will never be 0! (0, not 1)
                     }
                 }
             }
@@ -161,6 +166,7 @@ public class Duck {
             }
 
             if(job == Jobs.RETRIEVINGFLAG){
+                lib.setEnemyFlagLoc(rc.getLocation(), flagCarrierIndex);
                 if(lib.contains(rc.getAllySpawnLocations(), rc.getLocation())){
                     job = Jobs.IDLING;
                     if(rc.canDropFlag(rc.getLocation())) {
@@ -168,6 +174,13 @@ public class Duck {
                     }
                     locationGoing = Lib.noLoc;
                     directionGoing = Lib.directions[rng.nextInt(8)];
+                }
+                if(!rc.hasFlag()){
+                    job = Jobs.IDLING;
+                    locationGoing = Lib.noLoc;
+                    directionGoing = Lib.directions[rng.nextInt(8)];
+                    lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                    flagCarrierIndex = 0;
                 }
             }
 
@@ -202,7 +215,7 @@ public class Duck {
 
             move();
 
-            lib.printSharedArray(8);
+            //lib.printSharedArray(8);
 
 
         }
