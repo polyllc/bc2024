@@ -15,6 +15,7 @@ public class Lib {
 
 
     static MapLocation noLoc = new MapLocation(256,256);
+    static MapLocation noFlag = new MapLocation(257,257);
 
     public Lib(RobotController robot){
         rc = robot;
@@ -346,16 +347,16 @@ public class Lib {
 
     public MapLocation getNearestFlagCarrier() throws GameActionException {
         MapLocation[] flags = new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)};
-        if(flags[0].equals(new MapLocation(0, 0))){
+        if(flags[0].equals(new MapLocation(-1, -1))){
             flags[0] = noLoc;
         }
-        if(flags[1].equals(new MapLocation(0, 0))){
+        if(flags[1].equals(new MapLocation(-1, -1))){
             flags[1] = noLoc;
         }
-        if(flags[2].equals(new MapLocation(0, 0))){
+        if(flags[2].equals(new MapLocation(-1, -1))){
             flags[2] = noLoc;
         }
-        if(flags[3].equals(new MapLocation(0, 0))){
+        if(flags[3].equals(new MapLocation(-1, -1))){
             flags[3] = noLoc;
         }
 
@@ -379,13 +380,13 @@ public class Lib {
     }
 
     public int getNextClearFlagIndex() throws GameActionException {
-        if(getEnemyFlagLoc(1) == noLoc){
+        if(getEnemyFlagLoc(1).equals(noFlag) || getEnemyFlagLoc(1).equals(new MapLocation(-1,-1))) {
             return 1;
-        } else if(getEnemyFlagLoc(2) == noLoc){
+        } else if(getEnemyFlagLoc(2).equals(noFlag) || getEnemyFlagLoc(2).equals(new MapLocation(-1,-1))){
             return 2;
-        } else if(getEnemyFlagLoc(3) == noLoc){
+        } else if(getEnemyFlagLoc(3).equals(noFlag)|| getEnemyFlagLoc(3).equals(new MapLocation(-1,-1))){
             return 3;
-        } else if(getEnemyFlagLoc(4) == noLoc) {
+        } else if(getEnemyFlagLoc(4).equals(noFlag) || getEnemyFlagLoc(4).equals(new MapLocation(-1,-1))) {
             return 4;
         } else {
             return 0;
@@ -393,19 +394,26 @@ public class Lib {
     }
 
     public int getFlagIndex(MapLocation loc) throws GameActionException {
-        if(getEnemyFlagLoc(1) == loc){
+        if(getEnemyFlagLoc(1).equals(loc)){
             return 1;
-        } else if(getEnemyFlagLoc(2) == loc){
+        } else if(getEnemyFlagLoc(2).equals(loc)){
             return 2;
-        } else if(getEnemyFlagLoc(3) == loc){
+        } else if(getEnemyFlagLoc(3).equals(loc)){
             return 3;
-        } else if(getEnemyFlagLoc(4) == loc){
+        } else if(getEnemyFlagLoc(4).equals(loc)){
             return 4;
         }
         return 0;
     }
 
-
+    public void printSharedArray(int limit) throws GameActionException {
+        limit = limit % 64;
+        StringBuilder output = new StringBuilder();
+        for(int i = 0; i < limit; i++){
+            output.append("I" + i + ": " + rc.readSharedArray(i) + " | ");
+        }
+        System.out.println(output);
+    }
 
 
 }

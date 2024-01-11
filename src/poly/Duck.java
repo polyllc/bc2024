@@ -1,6 +1,8 @@
 package poly;
 
 import battlecode.common.*;
+
+import javax.swing.*;
 import java.util.Random;
 
 public class Duck {
@@ -18,6 +20,7 @@ public class Duck {
     boolean lastMovement = false;
 
     int turnsMovingInDirection = 0;
+
 
     int flagCarrierIndex = 0;
 
@@ -80,7 +83,7 @@ public class Duck {
                     }
 
                     MapLocation nearestFlagCarrier = lib.getNearestFlagCarrier();
-                    if(nearestFlagCarrier != Lib.noLoc){
+                    if(!nearestFlagCarrier.equals(Lib.noLoc) && !nearestFlagCarrier.equals(Lib.noFlag)){
                         job = Jobs.GUARDINGFLAGHOLDER;
                         flagCarrierIndex = lib.getFlagIndex(nearestFlagCarrier);
                         locationGoing = nearestFlagCarrier;
@@ -165,12 +168,13 @@ public class Duck {
 
             if(job == Jobs.GUARDINGFLAGHOLDER){ //todo, if the flag holder dies, well this doesn't update, so do that
                 MapLocation flagHolder = lib.getEnemyFlagLoc(flagCarrierIndex);
-                if(flagHolder == Lib.noLoc){
+                if(!flagHolder.equals(Lib.noFlag) && !flagHolder.equals(Lib.noLoc)){
                     locationGoing = flagHolder;
                 }
                 else {
                     locationGoing = Lib.noLoc;
                     directionGoing = Lib.directions[rng.nextInt(8)];
+                    flagCarrierIndex = 0;
                     job = Jobs.IDLING;
                 }
             }
@@ -181,6 +185,8 @@ public class Duck {
            // if(lib.
 
             move();
+
+            lib.printSharedArray(8);
 
 
         }
