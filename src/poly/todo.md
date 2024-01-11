@@ -8,6 +8,7 @@
 - place down traps!
 - put the flags in a good spot (meaning the edges or the corners)
 - spawn all of the ducks on first round
+- once set up is done, make sure all of the ducks spread out around the dam
 
 If you want to do one of these, mark the first letter of your name
 next to the one that you want to do, and then delete and commit once 

@@ -1,6 +1,8 @@
 package poly;
 
 import battlecode.common.*;
+
+import javax.swing.*;
 import java.util.Random;
 
 public class Duck {
@@ -17,12 +19,18 @@ public class Duck {
     MapLocation crumbPlace = Lib.noLoc;
     boolean lastMovement = false;
 
+    int turnsMovingInDirection = 0;
+
+
+    int flagCarrierIndex = 0;
+
     enum Jobs {
         GETTINGFLAG,
         RETRIEVINGFLAG,
         GETTINGCRUMBS,
         IDLING,
-        FINDINGFLAG
+        FINDINGFLAG,
+        GUARDINGFLAGHOLDER
     }
 
     Jobs job;
@@ -71,6 +79,14 @@ public class Duck {
                     if(nearestFlags.length > 0){ //currently the array is just 1 length, so we can just grab the first one
                         locationGoing = nearestFlags[0].getLocation();
                         job = Jobs.GETTINGFLAG;
+                        flagCarrierIndex = lib.getNextClearFlagIndex(); //we pray we hope, this will never be 0! (0, not 1)
+                    }
+
+                    MapLocation nearestFlagCarrier = lib.getNearestFlagCarrier();
+                    if(!nearestFlagCarrier.equals(Lib.noLoc) && !nearestFlagCarrier.equals(Lib.noFlag)){
+                        job = Jobs.GUARDINGFLAGHOLDER;
+                        flagCarrierIndex = lib.getFlagIndex(nearestFlagCarrier);
+                        locationGoing = nearestFlagCarrier;
                     }
                 }
             }
@@ -79,7 +95,7 @@ public class Duck {
 
             if(job == Jobs.GETTINGCRUMBS) {
                 if(rc.getRoundNum() > 200){
-                    job = Jobs.IDLING;
+                    //job = Jobs.IDLING;
                 }
                 if (crumbPlace == locationGoing) {
                     if (rc.canSenseLocation(crumbPlace)) {
@@ -102,17 +118,45 @@ public class Duck {
                         }
                     }
                 }
+
+                if(rc.getRoundNum() > 200){
+                    FlagInfo[] nearestFlags = lib.getNearestFlags(rc.getLocation());
+                    if(nearestFlags.length > 0){ //currently the array is just 1 length, so we can just grab the first one
+                        locationGoing = nearestFlags[0].getLocation();
+                        job = Jobs.GETTINGFLAG;
+                        flagCarrierIndex = lib.getNextClearFlagIndex(); //we pray we hope, this will never be 0! (0, not 1)
+                    }
+
+                    MapLocation nearestFlagCarrier = lib.getNearestFlagCarrier();
+                    if(!nearestFlagCarrier.equals(Lib.noLoc) && !nearestFlagCarrier.equals(Lib.noFlag)){
+                        job = Jobs.GUARDINGFLAGHOLDER;
+                        flagCarrierIndex = lib.getFlagIndex(nearestFlagCarrier);
+                        locationGoing = nearestFlagCarrier;
+                    }
+                }
             }
 
             if(job == Jobs.GETTINGFLAG){
+
+                lib.setEnemyFlagLoc(rc.getLocation(), flagCarrierIndex);
+
                 if(rc.getLocation().distanceSquaredTo(locationGoing) <= 2){
                     for(Direction dir : lib.startDirList(lib.dirToIndex(rc.getLocation().directionTo(locationGoing)), 0)){
                         if(rc.canPickupFlag(locationGoing)){
                             rc.pickupFlag(locationGoing);
                             job = Jobs.RETRIEVINGFLAG;
                             locationGoing = lib.getNearestSpawns(rc.getLocation())[0];
+                            lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                            flagCarrierIndex = 0;
                         }
                     }
+                }
+                if(!rc.hasFlag()){
+                    job = Jobs.IDLING;
+                    locationGoing = Lib.noLoc;
+                    directionGoing = Lib.directions[rng.nextInt(8)];
+                    lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                    flagCarrierIndex = 0;
                 }
             }
 
@@ -129,7 +173,36 @@ public class Duck {
 
            rc.setIndicatorString("location Going: " + locationGoing + " , Job: " + job + " last: " + lastMovement);
 
+            if(turnsMovingInDirection > (rc.getMapHeight() + rc.getMapWidth())){
+                switch(rc.getRoundNum() % 3){
+                    case 0: directionGoing = directionGoing.opposite(); break;
+                    case 1: directionGoing = directionGoing.opposite().rotateLeft(); break;
+                    case 2: directionGoing = directionGoing.opposite().rotateRight(); break;
+                }
+                turnsMovingInDirection = 0;
+            }
+
+            if(job == Jobs.GUARDINGFLAGHOLDER){ //todo, if the flag holder dies, well this doesn't update, so do that
+                MapLocation flagHolder = lib.getEnemyFlagLoc(flagCarrierIndex);
+                if(!flagHolder.equals(Lib.noFlag) && !flagHolder.equals(Lib.noLoc)){
+                    locationGoing = flagHolder;
+                }
+                else {
+                    locationGoing = Lib.noLoc;
+                    directionGoing = Lib.directions[rng.nextInt(8)];
+                    flagCarrierIndex = 0;
+                    job = Jobs.IDLING;
+                }
+            }
+
+
+            attack();
+
+           // if(lib.
+
             move();
+
+            lib.printSharedArray(8);
 
 
         }
@@ -146,10 +219,30 @@ public class Duck {
         if(locationGoing == Lib.noLoc) {
             if (directionGoing != Direction.CENTER) {
                 nav.goTo(directionGoing);
+                turnsMovingInDirection++;
             }
         }
         else{
-           lastMovement = nav.goTo(locationGoing, false);
+           lastMovement = nav.goTo(locationGoing, false); //if we need to save bytecode, well this is where we're saving it
+           if(!lastMovement){
+               lastMovement = nav.bugNavTo(locationGoing);
+               if(!lastMovement){
+                   lastMovement = nav.navTo(locationGoing);
+                   if(!lastMovement){
+                      // lastMovement = nav.goTo(rc.getLocation().directionTo(locationGoing));
+                   }
+               }
+           }
+           turnsMovingInDirection = 0;
+        }
+    }
+
+    void attack() throws GameActionException{
+        RobotInfo[] robotInfos = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
+        if(robotInfos.length > 0){
+            if(rc.canAttack(robotInfos[0].getLocation())){
+                rc.attack(robotInfos[0].getLocation());
+            }
         }
     }
 }

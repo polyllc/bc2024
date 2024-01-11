@@ -75,7 +75,7 @@ public class Navigation {
     // navigate towards a particular location
     // we use this function for moving to a specific location
     boolean goTo(MapLocation destination, boolean avoidBugNav) throws GameActionException {
-        if (!(rc.isMovementReady()) || destination == null) return false;
+        if (!(rc.isMovementReady()) || destination == Lib.noLoc) return false;
         if (useBugNav && !avoidBugNav) {
             return bugNavTo(destination);
         }
@@ -205,7 +205,7 @@ public class Navigation {
                 }
                 else {
                     MapInfo mapInfo = rc.senseMapInfo(loc);
-                    valid = !mapInfo.isPassable();
+                    valid = mapInfo.isPassable();
                 }
                 // boolean valid = rc.canSenseLocation(loc) && !rc.isLocationOccupied(loc) && rc.senseMapInfo(loc).getCurrentDirection() == Direction.CENTER;
                 validLocs[x][y] = valid;
