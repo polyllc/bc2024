@@ -19,12 +19,15 @@ public class Duck {
 
     int turnsMovingInDirection = 0;
 
+    int flagCarrierIndex = 0;
+
     enum Jobs {
         GETTINGFLAG,
         RETRIEVINGFLAG,
         GETTINGCRUMBS,
         IDLING,
-        FINDINGFLAG
+        FINDINGFLAG,
+        GUARDINGFLAGHOLDER
     }
 
     Jobs job;
@@ -73,6 +76,14 @@ public class Duck {
                     if(nearestFlags.length > 0){ //currently the array is just 1 length, so we can just grab the first one
                         locationGoing = nearestFlags[0].getLocation();
                         job = Jobs.GETTINGFLAG;
+                        flagCarrierIndex = lib.getNextClearFlagIndex(); //we pray we hope, this will never be 0! (0, not 1)
+                    }
+
+                    MapLocation nearestFlagCarrier = lib.getNearestFlagCarrier();
+                    if(nearestFlagCarrier != Lib.noLoc){
+                        job = Jobs.GUARDINGFLAGHOLDER;
+                        flagCarrierIndex = lib.getFlagIndex(nearestFlagCarrier);
+                        locationGoing = nearestFlagCarrier;
                     }
                 }
             }
@@ -107,12 +118,17 @@ public class Duck {
             }
 
             if(job == Jobs.GETTINGFLAG){
+
+                lib.setEnemyFlagLoc(rc.getLocation(), flagCarrierIndex);
+
                 if(rc.getLocation().distanceSquaredTo(locationGoing) <= 2){
                     for(Direction dir : lib.startDirList(lib.dirToIndex(rc.getLocation().directionTo(locationGoing)), 0)){
                         if(rc.canPickupFlag(locationGoing)){
                             rc.pickupFlag(locationGoing);
                             job = Jobs.RETRIEVINGFLAG;
                             locationGoing = lib.getNearestSpawns(rc.getLocation())[0];
+                            lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                            flagCarrierIndex = 0;
                         }
                     }
                 }
@@ -120,6 +136,8 @@ public class Duck {
                     job = Jobs.IDLING;
                     locationGoing = Lib.noLoc;
                     directionGoing = Lib.directions[rng.nextInt(8)];
+                    lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                    flagCarrierIndex = 0;
                 }
             }
 
@@ -144,6 +162,19 @@ public class Duck {
                 }
                 turnsMovingInDirection = 0;
             }
+
+            if(job == Jobs.GUARDINGFLAGHOLDER){ //todo, if the flag holder dies, well this doesn't update, so do that
+                MapLocation flagHolder = lib.getEnemyFlagLoc(flagCarrierIndex);
+                if(flagHolder == Lib.noLoc){
+                    locationGoing = flagHolder;
+                }
+                else {
+                    locationGoing = Lib.noLoc;
+                    directionGoing = Lib.directions[rng.nextInt(8)];
+                    job = Jobs.IDLING;
+                }
+            }
+
 
             attack();
 

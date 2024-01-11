@@ -2,6 +2,7 @@ package poly;
 
 import battlecode.common.*;
 
+import java.util.Map;
 
 
 public class Lib {
@@ -320,19 +321,19 @@ public class Lib {
 
     public void setEnemyFlagLoc(MapLocation loc, int flagNum) throws GameActionException {
         switch(flagNum){
-            case 1: writeArray(0, loc.x); writeArray(1, loc.y); break;
-            case 2: writeArray(2, loc.x); writeArray(3, loc.y); break;
-            case 3: writeArray(4, loc.x); writeArray(5, loc.y); break;
-            case 4: writeArray(6, loc.x); writeArray(7, loc.y); break;
+            case 1: writeArray(0, loc.x+1); writeArray(1, loc.y+1); break;
+            case 2: writeArray(2, loc.x+1); writeArray(3, loc.y+1); break;
+            case 3: writeArray(4, loc.x+1); writeArray(5, loc.y+1); break;
+            case 4: writeArray(6, loc.x+1); writeArray(7, loc.y+1); break; //we add one because 0,0 is a valid position on the map, and the default values of the array are 0
         }
     }
 
     public MapLocation getEnemyFlagLoc(int flagNum) throws GameActionException {
         switch (flagNum) {
-            case 1: return new MapLocation(rc.readSharedArray(0), rc.readSharedArray(1));
-            case 2: return new MapLocation(rc.readSharedArray(2), rc.readSharedArray(3));
-            case 3: return new MapLocation(rc.readSharedArray(4), rc.readSharedArray(5));
-            case 4: return new MapLocation(rc.readSharedArray(6), rc.readSharedArray(7));
+            case 1: return new MapLocation(rc.readSharedArray(0)-1, rc.readSharedArray(1)-1);
+            case 2: return new MapLocation(rc.readSharedArray(2)-1, rc.readSharedArray(3)-1);
+            case 3: return new MapLocation(rc.readSharedArray(4)-1, rc.readSharedArray(5)-1);
+            case 4: return new MapLocation(rc.readSharedArray(6)-1, rc.readSharedArray(7)-1);
         }
         return noLoc;
     }
@@ -341,6 +342,67 @@ public class Lib {
         if(rc.canWriteSharedArray(index, value)){
             rc.writeSharedArray(index, value);
         }
+    }
+
+    public MapLocation getNearestFlagCarrier() throws GameActionException {
+        MapLocation[] flags = new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)};
+        if(flags[0].equals(new MapLocation(0, 0))){
+            flags[0] = noLoc;
+        }
+        if(flags[1].equals(new MapLocation(0, 0))){
+            flags[1] = noLoc;
+        }
+        if(flags[2].equals(new MapLocation(0, 0))){
+            flags[2] = noLoc;
+        }
+        if(flags[3].equals(new MapLocation(0, 0))){
+            flags[3] = noLoc;
+        }
+
+        MapLocation closest = noLoc;
+
+        if(flags[0].distanceSquaredTo(rc.getLocation()) <= closest.distanceSquaredTo(rc.getLocation())){
+            closest = flags[0];
+        }
+        if(flags[1].distanceSquaredTo(rc.getLocation()) <= closest.distanceSquaredTo(rc.getLocation())){
+            closest = flags[1];
+        }
+        if(flags[2].distanceSquaredTo(rc.getLocation()) <= closest.distanceSquaredTo(rc.getLocation())){
+            closest = flags[2];
+        }
+        if(flags[3].distanceSquaredTo(rc.getLocation()) <= closest.distanceSquaredTo(rc.getLocation())){
+            closest = flags[3];
+        }
+
+
+        return closest;
+    }
+
+    public int getNextClearFlagIndex() throws GameActionException {
+        if(getEnemyFlagLoc(1) == noLoc){
+            return 1;
+        } else if(getEnemyFlagLoc(2) == noLoc){
+            return 2;
+        } else if(getEnemyFlagLoc(3) == noLoc){
+            return 3;
+        } else if(getEnemyFlagLoc(4) == noLoc) {
+            return 4;
+        } else {
+            return 0;
+        }
+    }
+
+    public int getFlagIndex(MapLocation loc) throws GameActionException {
+        if(getEnemyFlagLoc(1) == loc){
+            return 1;
+        } else if(getEnemyFlagLoc(2) == loc){
+            return 2;
+        } else if(getEnemyFlagLoc(3) == loc){
+            return 3;
+        } else if(getEnemyFlagLoc(4) == loc){
+            return 4;
+        }
+        return 0;
     }
 
 
