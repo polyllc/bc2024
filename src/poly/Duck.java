@@ -16,6 +16,16 @@ public class Duck {
     MapLocation spawnLocation = Lib.noLoc;
     MapLocation crumbPlace = Lib.noLoc;
 
+    enum Jobs {
+        GETTINGFLAG,
+        RETRIEVINGFLAG,
+        GETTINGCRUMBS,
+        IDLING,
+        FINDINGFLAG
+    }
+
+    Jobs job;
+
     SkillType duckSkill; //the skill that the duck is supposed to level up
     static final Random rng = new Random(6147);
 
@@ -36,6 +46,7 @@ public class Duck {
                     rc.spawn(randomLoc.add(dir));
                     spawnLocation = randomLoc.add(dir);
                     directionGoing = randomLoc.add(dir).directionTo(lib.mapCenter());
+                    job = Jobs.IDLING;
                     break;
                 }
             }
@@ -46,26 +57,84 @@ public class Duck {
                 //we don't want it to not do anything, but most likely that won't happen for now
             }
 
-            MapLocation[] crumbs = rc.senseNearbyCrumbs(20);
-            if(crumbs.length > 0){
-                crumbPlace = crumbs[0];
-                locationGoing = crumbs[0];
-            }
-            if(crumbPlace == locationGoing){
-                if(rc.canSenseLocation(crumbPlace)){
-                    if(rc.senseMapInfo(crumbPlace).getCrumbs() == 0){
-                        crumbPlace = Lib.noLoc;
-                        locationGoing = Lib.noLoc;
-                        directionGoing = Lib.directions[rng.nextInt(8)];
+            if(job == Jobs.IDLING) {
+                MapLocation[] crumbs = rc.senseNearbyCrumbs(20);
+                if (crumbs.length > 0) {
+                    crumbPlace = crumbs[0];
+                    locationGoing = crumbs[0];
+                    job = Jobs.GETTINGCRUMBS;
+                }
+
+                if(rc.getRoundNum() > 200){
+                    FlagInfo[] nearestFlags = lib.getNearestFlags(rc.getLocation());
+                    if(nearestFlags.length > 0){ //currently the array is just 1 length, so we can just grab the first one
+                        locationGoing = nearestFlags[0].getLocation();
+                        job = Jobs.GETTINGFLAG;
                     }
                 }
             }
 
+
+
+            if(job == Jobs.GETTINGCRUMBS) {
+                if(rc.getRoundNum() > 200){
+                    job = Jobs.IDLING;
+                }
+                if (crumbPlace == locationGoing) {
+                    if (rc.canSenseLocation(crumbPlace)) {
+                        if (rc.senseMapInfo(crumbPlace).getCrumbs() == 0) {
+                            crumbPlace = Lib.noLoc;
+                            locationGoing = Lib.noLoc;
+                            directionGoing = Lib.directions[rng.nextInt(8)];
+                            job = Jobs.IDLING;
+                        }
+                    }
+                }
+
+                if (lib.surroundedByWater(crumbPlace)) {
+                    if (rc.getCrumbs() > 10) {
+                        if (rc.getLocation().distanceSquaredTo(crumbPlace) < 6) {
+                            MapLocation ahead = rc.getLocation().add(rc.getLocation().directionTo(crumbPlace));
+                            if (rc.canFill(ahead)) {
+                                rc.fill(ahead);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if(job == Jobs.GETTINGFLAG){
+                if(rc.getLocation().distanceSquaredTo(locationGoing) <= 2){
+                    for(Direction dir : lib.startDirList(lib.dirToIndex(rc.getLocation().directionTo(locationGoing)), 0)){
+                        if(rc.canPickupFlag(locationGoing)){
+                            rc.pickupFlag(locationGoing);
+                            job = Jobs.RETRIEVINGFLAG;
+                            locationGoing = lib.getNearestSpawns(rc.getLocation())[0];
+                        }
+                    }
+                }
+            }
+
+            if(job == Jobs.RETRIEVINGFLAG){
+                if(lib.contains(rc.getAllySpawnLocations(), rc.getLocation())){
+                    job = Jobs.IDLING;
+                    if(rc.canDropFlag(rc.getLocation())) {
+                        rc.dropFlag(rc.getLocation());
+                    }
+                    locationGoing = Lib.noLoc;
+                    directionGoing = Lib.directions[rng.nextInt(8)];
+                }
+            }
+
+
+
+
+
             move();
             rc.setIndicatorString(String.valueOf(directionGoing));
         }
-        if(rc.getRoundNum() > 200){
-            rc.resign();
+        if(rc.getRoundNum() > 500){
+           // rc.resign();
         }
     }
 
