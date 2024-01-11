@@ -263,6 +263,25 @@ public class Lib {
         return items;
     }
 
+    public MapLocation[] getNearestSpawns(MapLocation loc){
+        MapLocation[] spawns = rc.getAllySpawnLocations();
+        if(spawns.length > 0){
+            int i = 0;
+            do {
+                i = 0;
+                for(int j = 0; j < spawns.length-1; j++){
+                    if(spawns[j].distanceSquaredTo(loc) > spawns[j+1].distanceSquaredTo(loc)){
+                        MapLocation temp = spawns[j];
+                        spawns[j] = spawns[j+1];
+                        spawns[j+1] = temp;
+                        i++;
+                    }
+                }
+            } while(i > 0);
+        }
+        return spawns;
+    }
+
     //senses if a tile is surrounded by water in a 3x3 area, anything larger, no dice (should probably upgrade to a 5x5 one day, lukas you want to do that?)
     public boolean surroundedByWater(MapLocation loc) throws GameActionException {
         if(rc.canSenseLocation(loc)) {

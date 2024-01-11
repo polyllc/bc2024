@@ -20,7 +20,8 @@ public class Duck {
         GETTINGFLAG,
         RETRIEVINGFLAG,
         GETTINGCRUMBS,
-        IDLING
+        IDLING,
+        FINDINGFLAG
     }
 
     Jobs job;
@@ -63,11 +64,22 @@ public class Duck {
                     locationGoing = crumbs[0];
                     job = Jobs.GETTINGCRUMBS;
                 }
+
+                if(rc.getRoundNum() > 200){
+                    FlagInfo[] nearestFlags = lib.getNearestFlags(rc.getLocation());
+                    if(nearestFlags.length > 0){ //currently the array is just 1 length, so we can just grab the first one
+                        locationGoing = nearestFlags[0].getLocation();
+                        job = Jobs.GETTINGFLAG;
+                    }
+                }
             }
 
 
 
             if(job == Jobs.GETTINGCRUMBS) {
+                if(rc.getRoundNum() > 200){
+                    job = Jobs.IDLING;
+                }
                 if (crumbPlace == locationGoing) {
                     if (rc.canSenseLocation(crumbPlace)) {
                         if (rc.senseMapInfo(crumbPlace).getCrumbs() == 0) {
@@ -91,23 +103,38 @@ public class Duck {
                 }
             }
 
-
-
-
-            if(crumbPlace == Lib.noLoc){
-                if(rc.getRoundNum() > 200){
-                    FlagInfo[] nearestFlags = lib.getNearestFlags(rc.getLocation());
-                    if(nearestFlags.length > 0){ //currently the array is just 1 length, so we can just grab the first one
-                        locationGoing = nearestFlags[0].getLocation();
+            if(job == Jobs.GETTINGFLAG){
+                if(rc.getLocation().distanceSquaredTo(locationGoing) <= 2){
+                    for(Direction dir : lib.startDirList(lib.dirToIndex(rc.getLocation().directionTo(locationGoing)), 0)){
+                        if(rc.canPickupFlag(locationGoing)){
+                            rc.pickupFlag(locationGoing);
+                            job = Jobs.RETRIEVINGFLAG;
+                            locationGoing = lib.getNearestSpawns(rc.getLocation())[0];
+                        }
                     }
                 }
             }
+
+            if(job == Jobs.RETRIEVINGFLAG){
+                if(lib.contains(rc.getAllySpawnLocations(), rc.getLocation())){
+                    job = Jobs.IDLING;
+                    if(rc.canDropFlag(rc.getLocation())) {
+                        rc.dropFlag(rc.getLocation());
+                    }
+                    locationGoing = Lib.noLoc;
+                    directionGoing = Lib.directions[rng.nextInt(8)];
+                }
+            }
+
+
+
+
 
             move();
             rc.setIndicatorString(String.valueOf(directionGoing));
         }
         if(rc.getRoundNum() > 500){
-            rc.resign();
+           // rc.resign();
         }
     }
 
