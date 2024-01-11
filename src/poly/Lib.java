@@ -318,4 +318,32 @@ public class Lib {
         return new FlagInfo[]{};
     }
 
+    public void setEnemyFlagLoc(MapLocation loc, int flagNum) throws GameActionException {
+        switch(flagNum){
+            case 1: writeArray(0, loc.x); writeArray(1, loc.y); break;
+            case 2: writeArray(2, loc.x); writeArray(3, loc.y); break;
+            case 3: writeArray(4, loc.x); writeArray(5, loc.y); break;
+            case 4: writeArray(6, loc.x); writeArray(7, loc.y); break;
+        }
+    }
+
+    public MapLocation getEnemyFlagLoc(int flagNum) throws GameActionException {
+        switch (flagNum) {
+            case 1: return new MapLocation(rc.readSharedArray(0), rc.readSharedArray(1));
+            case 2: return new MapLocation(rc.readSharedArray(2), rc.readSharedArray(3));
+            case 3: return new MapLocation(rc.readSharedArray(4), rc.readSharedArray(5));
+            case 4: return new MapLocation(rc.readSharedArray(6), rc.readSharedArray(7));
+        }
+        return noLoc;
+    }
+
+    public void writeArray(int index, int value) throws GameActionException {
+        if(rc.canWriteSharedArray(index, value)){
+            rc.writeSharedArray(index, value);
+        }
+    }
+
+
+
+
 }

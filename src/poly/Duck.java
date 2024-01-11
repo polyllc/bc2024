@@ -17,6 +17,8 @@ public class Duck {
     MapLocation crumbPlace = Lib.noLoc;
     boolean lastMovement = false;
 
+    int turnsMovingInDirection = 0;
+
     enum Jobs {
         GETTINGFLAG,
         RETRIEVINGFLAG,
@@ -114,6 +116,11 @@ public class Duck {
                         }
                     }
                 }
+                if(!rc.hasFlag()){
+                    job = Jobs.IDLING;
+                    locationGoing = Lib.noLoc;
+                    directionGoing = Lib.directions[rng.nextInt(8)];
+                }
             }
 
             if(job == Jobs.RETRIEVINGFLAG){
@@ -128,6 +135,19 @@ public class Duck {
             }
 
            rc.setIndicatorString("location Going: " + locationGoing + " , Job: " + job + " last: " + lastMovement);
+
+            if(turnsMovingInDirection > (rc.getMapHeight() + rc.getMapWidth())){
+                switch(rc.getRoundNum() % 3){
+                    case 0: directionGoing = directionGoing.opposite(); break;
+                    case 1: directionGoing = directionGoing.opposite().rotateLeft(); break;
+                    case 2: directionGoing = directionGoing.opposite().rotateRight(); break;
+                }
+                turnsMovingInDirection = 0;
+            }
+
+            attack();
+
+           // if(lib.
 
             move();
 
@@ -146,10 +166,30 @@ public class Duck {
         if(locationGoing == Lib.noLoc) {
             if (directionGoing != Direction.CENTER) {
                 nav.goTo(directionGoing);
+                turnsMovingInDirection++;
             }
         }
         else{
-           lastMovement = nav.goTo(locationGoing, false);
+           lastMovement = nav.goTo(locationGoing, false); //if we need to save bytecode, well this is where we're saving it
+           if(!lastMovement){
+               lastMovement = nav.bugNavTo(locationGoing);
+               if(!lastMovement){
+                   lastMovement = nav.navTo(locationGoing);
+                   if(!lastMovement){
+                      // lastMovement = nav.goTo(rc.getLocation().directionTo(locationGoing));
+                   }
+               }
+           }
+           turnsMovingInDirection = 0;
+        }
+    }
+
+    void attack() throws GameActionException{
+        RobotInfo[] robotInfos = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
+        if(robotInfos.length > 0){
+            if(rc.canAttack(robotInfos[0].getLocation())){
+                rc.attack(robotInfos[0].getLocation());
+            }
         }
     }
 }
