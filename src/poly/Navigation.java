@@ -5,7 +5,7 @@ import battlecode.common.*;
 public class Navigation {
     RobotController rc;
     // bug nav variables
-    boolean useBugNav = false;
+    boolean useBugNav = true;
     boolean turnRight = false;
     int minDistanceToTarget = Integer.MAX_VALUE;
     Direction lastDirMoved = null;
@@ -79,10 +79,10 @@ public class Navigation {
         if (useBugNav && !avoidBugNav) {
             return bugNavTo(destination);
         }
-        else if (Clock.getBytecodesLeft() > 7000) { // if we have time, do more intelligent navigation
+        else if (Clock.getBytecodesLeft() > 0) { // if we have time, do more intelligent navigation
             boolean success = navTo(destination);
             if (!success && !avoidBugNav) {
-                //System.out.println("Intelligent navigation failed; switching to bug nav");
+               // System.out.println("Intelligent navigation failed; switching to bug nav");
                 useBugNav = true;
                 MapLocation currentLoc = rc.getLocation();
                 minDistanceToTarget = Math.min(minDistanceToTarget, currentLoc.distanceSquaredTo(destination));
@@ -102,18 +102,21 @@ public class Navigation {
                     lastDirMoved = lastDirMoved.rotateRight().rotateRight();
                 // if (Math.abs(difference) < Math.PI / 10) turnRight = !turnRight;
                 bugNavTarget = destination;
-                //System.out.println(minDistanceToTarget);
+              //  System.out.println(minDistanceToTarget);
 
                 // we want bug nav toward the center
                 // this means that we should turn right if, when facing the center, the destination is on the right
             }
-            if (avoidBugNav)
+            if (avoidBugNav) {
+                System.out.println("avoidBugNav: " + success);
                 return success;
-            else
+            }
+            else {
                 return success || bugNavTo(destination);
+            }
         }
         else {
-            //System.out.println("Trying to go to " + destination);
+            System.out.println("Trying to go to " + destination);
             MapLocation myLoc = rc.getLocation();
             double x = destination.x - myLoc.x;
             double y = destination.y - myLoc.y;
@@ -121,7 +124,7 @@ public class Navigation {
             Direction dir = myLoc.directionTo(destination);
             double dirAngle = Math.atan2(dir.dy, dir.dx);
             double difference = (actualAngle - dirAngle + 2 * Math.PI) % (2 * Math.PI);
-            //System.out.println(difference);
+            System.out.println(difference);
             if (difference < Math.PI)
                 return goTo(dir, true);
             else

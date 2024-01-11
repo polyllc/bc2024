@@ -15,6 +15,7 @@ public class Duck {
 
     MapLocation spawnLocation = Lib.noLoc;
     MapLocation crumbPlace = Lib.noLoc;
+    boolean lastMovement = false;
 
     enum Jobs {
         GETTINGFLAG,
@@ -126,12 +127,11 @@ public class Duck {
                 }
             }
 
-
-
-
+           rc.setIndicatorString("location Going: " + locationGoing + " , Job: " + job + " last: " + lastMovement);
 
             move();
-            rc.setIndicatorString(String.valueOf(directionGoing));
+
+
         }
         if(rc.getRoundNum() > 500){
            // rc.resign();
@@ -139,13 +139,17 @@ public class Duck {
     }
 
     void move() throws GameActionException {
+        if(lib.detectCorner(directionGoing)){
+            directionGoing = rc.getLocation().directionTo(new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2));
+            //directionGoing = directionGoing.opposite();
+        }
         if(locationGoing == Lib.noLoc) {
             if (directionGoing != Direction.CENTER) {
                 nav.goTo(directionGoing);
             }
         }
         else{
-            nav.goTo(locationGoing);
+           lastMovement = nav.goTo(locationGoing, false);
         }
     }
 }
