@@ -95,7 +95,7 @@ public class Duck {
 
             if(job == Jobs.GETTINGCRUMBS) {
                 if(rc.getRoundNum() > 200){
-                    job = Jobs.IDLING;
+                    //job = Jobs.IDLING;
                 }
                 if (crumbPlace == locationGoing) {
                     if (rc.canSenseLocation(crumbPlace)) {
@@ -116,6 +116,22 @@ public class Duck {
                                 rc.fill(ahead);
                             }
                         }
+                    }
+                }
+
+                if(rc.getRoundNum() > 200){
+                    FlagInfo[] nearestFlags = lib.getNearestFlags(rc.getLocation());
+                    if(nearestFlags.length > 0){ //currently the array is just 1 length, so we can just grab the first one
+                        locationGoing = nearestFlags[0].getLocation();
+                        job = Jobs.GETTINGFLAG;
+                        flagCarrierIndex = lib.getNextClearFlagIndex(); //we pray we hope, this will never be 0! (0, not 1)
+                    }
+
+                    MapLocation nearestFlagCarrier = lib.getNearestFlagCarrier();
+                    if(!nearestFlagCarrier.equals(Lib.noLoc) && !nearestFlagCarrier.equals(Lib.noFlag)){
+                        job = Jobs.GUARDINGFLAGHOLDER;
+                        flagCarrierIndex = lib.getFlagIndex(nearestFlagCarrier);
+                        locationGoing = nearestFlagCarrier;
                     }
                 }
             }
