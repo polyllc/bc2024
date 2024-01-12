@@ -2,6 +2,7 @@ package poly;
 
 import battlecode.common.*;
 
+import java.util.Arrays;
 import java.util.Map;
 
 
@@ -187,6 +188,19 @@ public class Lib {
 
         return false;
     }
+
+     boolean detectCorner(MapLocation loc, int radius){
+         if(loc.distanceSquaredTo(new MapLocation(0 ,0)) <= radius){
+             return true;
+         } else if(loc.distanceSquaredTo(new MapLocation(rc.getMapWidth()-1, 0)) <= radius){
+             return true;
+         } else if(loc.distanceSquaredTo(new MapLocation(0, rc.getMapHeight()-1)) <= radius){
+             return true;
+         } else if(loc.distanceSquaredTo(new MapLocation(rc.getMapWidth()-1, rc.getMapHeight()-1)) <= radius) {
+            return true;
+         }
+         return false;
+     }
 
 
     public Direction[] startDirList(int index, int offset){
@@ -380,13 +394,15 @@ public class Lib {
     }
 
     public int getNextClearFlagIndex() throws GameActionException {
-        if(getEnemyFlagLoc(1).equals(noFlag) || getEnemyFlagLoc(1).equals(new MapLocation(-1,-1))) {
+        MapLocation[] flags = new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)};
+        System.out.println(Arrays.toString(flags));
+        if(getEnemyFlagLoc(1).equals(noLoc) || getEnemyFlagLoc(1).equals(new MapLocation(-1,-1))) {
             return 1;
-        } else if(getEnemyFlagLoc(2).equals(noFlag) || getEnemyFlagLoc(2).equals(new MapLocation(-1,-1))){
+        } else if(getEnemyFlagLoc(2).equals(noLoc) || getEnemyFlagLoc(2).equals(new MapLocation(-1,-1))){
             return 2;
-        } else if(getEnemyFlagLoc(3).equals(noFlag)|| getEnemyFlagLoc(3).equals(new MapLocation(-1,-1))){
+        } else if(getEnemyFlagLoc(3).equals(noLoc)|| getEnemyFlagLoc(3).equals(new MapLocation(-1,-1))){
             return 3;
-        } else if(getEnemyFlagLoc(4).equals(noFlag) || getEnemyFlagLoc(4).equals(new MapLocation(-1,-1))) {
+        } else if(getEnemyFlagLoc(4).equals(noLoc) || getEnemyFlagLoc(4).equals(new MapLocation(-1,-1))) {
             return 4;
         } else {
             return 0;
@@ -415,5 +431,93 @@ public class Lib {
         System.out.println(output);
     }
 
+    // to save bytecode, we can only run this continuously only until all 3 spawn points are found
+    // we can also make this way smarter by simply by knowing one of the spawn locations, we know by our spawn locations whether the map is rotation\
+    //    horizontal reflection or vertical reflection by running some cool calculations
+    // we can also make it so if it senses one of the corners, it will automagically register the mid-point as it can only be the opposite matching
+    //    corner with the duck that discovers
+    // this sounds like a job for mr lukasz!
+    public void enemySpawnPoints(MapLocation loc) throws GameActionException { //set enemy spawn points, the middle of the 3x3 area
+        for(MapInfo enemySpawn : rc.senseNearbyMapInfos()) {
+            if (enemySpawn.isSpawnZone()) {
+                int teamInInt = rc.getTeam().opponent() == Team.A ? 1 : 2;
+                if (enemySpawn.getSpawnZoneTeam() == teamInInt) {
+                    if (checkIfCenter(loc)) {
+                        if(!isEnemyCenter(loc)) {
+                            setEnemyCenter(loc);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean checkIfCenter(MapLocation loc) throws GameActionException {
+        int i = 0;
+        for(Direction dir : directions){
+            if(rc.canSenseLocation(loc.add(dir))){
+                if(rc.senseMapInfo(loc.add(dir)).isSpawnZone()){
+                    i++;
+                }
+            }
+        }
+        return i == 8;
+    }
+
+    public void setEnemyCenter(MapLocation loc) throws GameActionException {
+        if(new MapLocation(rc.readSharedArray(11), rc.readSharedArray(12)).equals(new MapLocation(0,0))){
+            rc.writeSharedArray(11, loc.x);
+            rc.writeSharedArray(12, loc.y);
+        } else if(new MapLocation(rc.readSharedArray(13), rc.readSharedArray(14)).equals(new MapLocation(0,0))) {
+            rc.writeSharedArray(13, loc.x);
+            rc.writeSharedArray(14, loc.y);
+        } else if(new MapLocation(rc.readSharedArray(15), rc.readSharedArray(16)).equals(new MapLocation(0,0))) {
+            rc.writeSharedArray(15, loc.x);
+            rc.writeSharedArray(16, loc.y);
+        }
+    }
+
+    public boolean isEnemyCenter(MapLocation loc) throws GameActionException {
+        if(new MapLocation(rc.readSharedArray(11), rc.readSharedArray(12)).equals(loc)){
+            return true;
+        } else if(new MapLocation(rc.readSharedArray(13), rc.readSharedArray(14)).equals(loc)){
+            return true;
+        } else if(new MapLocation(rc.readSharedArray(15), rc.readSharedArray(16)).equals(loc)){
+            return true;
+        }
+        return false;
+    }
+
+    public MapLocation getNearestEnemyCenter(MapLocation loc) throws GameActionException {
+        MapLocation[] enemyCenter = new MapLocation[]{
+                new MapLocation(rc.readSharedArray(11), rc.readSharedArray(12)),
+                new MapLocation(rc.readSharedArray(13), rc.readSharedArray(14)),
+                new MapLocation(rc.readSharedArray(15), rc.readSharedArray(16))};
+
+        if(enemyCenter[0].equals(new MapLocation(0, 0))){
+            enemyCenter[0] = noLoc;
+        }
+        if(enemyCenter[1].equals(new MapLocation(0, 0))){
+            enemyCenter[1] = noLoc;
+        }
+        if(enemyCenter[2].equals(new MapLocation(0, 0))){
+            enemyCenter[2] = noLoc;
+        }
+
+        MapLocation closest = noLoc;
+
+        if(enemyCenter[0].distanceSquaredTo(rc.getLocation()) <= closest.distanceSquaredTo(rc.getLocation())){
+            closest = enemyCenter[0];
+        }
+        if(enemyCenter[1].distanceSquaredTo(rc.getLocation()) <= closest.distanceSquaredTo(rc.getLocation())){
+            closest = enemyCenter[1];
+        }
+        if(enemyCenter[2].distanceSquaredTo(rc.getLocation()) <= closest.distanceSquaredTo(rc.getLocation())){
+            closest = enemyCenter[2];
+        }
+
+
+        return closest;
+    }
 
 }
