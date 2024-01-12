@@ -431,6 +431,65 @@ public class Lib {
         System.out.println(output);
     }
 
+    //we do this way cause the other way has I think 27*8*27*2*3 bytecode usage, which is way over our 25000 limit
+    public void setAllySpawnZones(MapLocation loc) throws GameActionException {
+        if(allySpawnZones().length != 3){
+            for(MapInfo allySpawn : rc.senseNearbyMapInfos()) {
+                if (allySpawn.isSpawnZone()) {
+                    int teamInInt = rc.getTeam() == Team.A ? 1 : 2;
+                    if (allySpawn.getSpawnZoneTeam() == teamInInt) {
+                        if (checkIfCenter(loc)) {
+                            if(!isAllyCenter(loc)) {
+                                setAllyCenter(loc);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean isAllyCenter(MapLocation loc) throws GameActionException {
+        if(new MapLocation(rc.readSharedArray(17), rc.readSharedArray(18)).equals(loc)){
+            return true;
+        } else if(new MapLocation(rc.readSharedArray(19), rc.readSharedArray(20)).equals(loc)){
+            return true;
+        } else if(new MapLocation(rc.readSharedArray(21), rc.readSharedArray(22)).equals(loc)){
+            return true;
+        }
+        return false;
+    }
+
+    public void setAllyCenter(MapLocation loc) throws GameActionException {
+        if(new MapLocation(rc.readSharedArray(17), rc.readSharedArray(18)).equals(new MapLocation(0,0))){
+            rc.writeSharedArray(17, loc.x);
+            rc.writeSharedArray(18, loc.y);
+        } else if(new MapLocation(rc.readSharedArray(19), rc.readSharedArray(20)).equals(new MapLocation(0,0))) {
+            rc.writeSharedArray(19, loc.x);
+            rc.writeSharedArray(20, loc.y);
+        } else if(new MapLocation(rc.readSharedArray(21), rc.readSharedArray(22)).equals(new MapLocation(0,0))) {
+            rc.writeSharedArray(21, loc.x);
+            rc.writeSharedArray(22, loc.y);
+        }
+    }
+
+    public MapLocation[] allySpawnZones() throws GameActionException {
+        MapLocation[] zones = new MapLocation[0];
+        if(!new MapLocation(rc.readSharedArray(17), rc.readSharedArray(18)).equals(new MapLocation(0,0))){
+            zones = new MapLocation[]{new MapLocation(rc.readSharedArray(17), rc.readSharedArray(18))};
+            if(!new MapLocation(rc.readSharedArray(19), rc.readSharedArray(20)).equals(new MapLocation(0,0))){
+                zones = new MapLocation[]{new MapLocation(rc.readSharedArray(17), rc.readSharedArray(18)),
+                                          new MapLocation(rc.readSharedArray(19), rc.readSharedArray(20))};
+                if(!new MapLocation(rc.readSharedArray(21), rc.readSharedArray(22)).equals(new MapLocation(0,0))){
+                    zones = new MapLocation[]{new MapLocation(rc.readSharedArray(17), rc.readSharedArray(18)),
+                                              new MapLocation(rc.readSharedArray(19), rc.readSharedArray(20)),
+                                              new MapLocation(rc.readSharedArray(21), rc.readSharedArray(22))};
+                }
+            }
+        }
+        return zones;
+    }
+
     // to save bytecode, we can only run this continuously only until all 3 spawn points are found
     // we can also make this way smarter by simply by knowing one of the spawn locations, we know by our spawn locations whether the map is rotation\
     //    horizontal reflection or vertical reflection by running some cool calculations
@@ -442,6 +501,7 @@ public class Lib {
             if (enemySpawn.isSpawnZone()) {
                 int teamInInt = rc.getTeam().opponent() == Team.A ? 1 : 2;
                 if (enemySpawn.getSpawnZoneTeam() == teamInInt) {
+                    autofillEnemySpawnPoints(loc);
                     if (checkIfCenter(loc)) {
                         if(!isEnemyCenter(loc)) {
                             setEnemyCenter(loc);
@@ -450,6 +510,20 @@ public class Lib {
                 }
             }
         }
+    }
+
+    //ok this will be a bit complicated so ill explain:
+    //we know that if we sense an enemy spawn point we can determine where the center is by just one spawn point by:
+    // - using rc.getLocation().direction(loc) and getting the opposite direction and then adding it to that loc
+    //      - even if it is off by a couple, that doesn't matter because it will never be off by more than 1
+    // - then setting that new added loc to the new enemy center
+    // - once we have one we can use our spawn point locations to determine what symmetry type we have
+    // - with rotational, we can simply rotate around the map center (to which I already have the code for)
+    // - with mirrored symmetry along the y-axis, that is also easy by just calculating the distance and adding it from that origin
+    // - same thing with x-axis
+    // - what is really cool is that the code is the exact same, except the quadrants will be different depending on the symmetry
+    public void autofillEnemySpawnPoints(MapLocation loc){
+
     }
 
     public boolean checkIfCenter(MapLocation loc) throws GameActionException {

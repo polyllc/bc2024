@@ -67,6 +67,11 @@ public class Duck {
             }
         }
         else{
+
+            if(rc.getRoundNum() == 2){
+                lib.setAllySpawnZones(rc.getLocation());
+            }
+
             //we want to explore around so
             if(directionGoing == Direction.CENTER){
                 //we don't want it to not do anything, but most likely that won't happen for now
@@ -260,12 +265,12 @@ public class Duck {
 
             move();
 
-            //if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(17);
+            if(rc.getRoundNum() % 1 == 0) lib.printSharedArray(35);
 
 
         }
-        if(rc.getRoundNum() > 500){
-            //rc.resign();
+        if(rc.getRoundNum() > 10){
+            rc.resign();
         }
     }
 
