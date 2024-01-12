@@ -1,13 +1,11 @@
 # todo
 - change the navigation code to also implement the fact that it would take less time to dig over water than go around
 - attack ducks that come close to flags
-- (M) share on the array where the enemy flags are
-- keep a healer duck near every spawn location
-- keep an attack duck near every spawn location
 - announce when enemies nearby the flag
 - place down traps!
-- spawn all of the ducks on first round
+- (M) spawn all of the ducks on first round
 - (M) once set up is done, make sure all of the ducks spread out around the dam
+- allow multiple pick up of the flags when they are close by
 
 If you want to do one of these, mark the first letter of your name
 next to the one that you want to do, and then delete and commit once 

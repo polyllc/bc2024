@@ -102,7 +102,12 @@ public class Duck {
                         if (rc.senseMapInfo(crumbPlace).getCrumbs() == 0) {
                             crumbPlace = Lib.noLoc;
                             locationGoing = Lib.noLoc;
-                            directionGoing = Lib.directions[rng.nextInt(8)];
+                            if(rc.getRoundNum() > 200) {
+                                directionGoing = Lib.directions[rng.nextInt(8)];
+                            }
+                            else {
+                                directionGoing = rc.getLocation().directionTo(lib.mapCenter());
+                            }
                             job = Jobs.IDLING;
                         }
                     }
@@ -179,11 +184,11 @@ public class Duck {
                 }
             }
 
-           rc.setIndicatorString("location Going: " + locationGoing + " , Job: " + job + " last: " + lastMovement);
+           rc.setIndicatorString("location Going: " + locationGoing + " , Job: " + job + " direction: " + directionGoing);
 
             if(turnsMovingInDirection > (rc.getMapHeight() + rc.getMapWidth())){
                 switch(rc.getRoundNum() % 3){
-                    case 0: directionGoing = directionGoing.opposite(); break;
+                  //  case 0: directionGoing = directionGoing.opposite(); break;
                     case 1: directionGoing = directionGoing.opposite().rotateLeft(); break;
                     case 2: directionGoing = directionGoing.opposite().rotateRight(); break;
                 }
@@ -192,13 +197,7 @@ public class Duck {
 
             if(job == Jobs.GUARDINGFLAGHOLDER){ //todo, if the flag holder dies, well this doesn't update, so do that
 
-                if(guardTime > 50){
-                    locationGoing = Lib.noLoc;
-                    directionGoing = Lib.directions[rng.nextInt(8)];
-                    flagCarrierIndex = 0;
-                    job = Jobs.IDLING;
-                    guardTime = 0;
-                }
+
 
                 findFlag();
 
@@ -237,7 +236,7 @@ public class Duck {
                 }
                 else {
                     locationGoing = Lib.noLoc;
-                    directionGoing = Lib.directions[rng.nextInt(8)];
+                    directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                     flagCarrierIndex = 0;
                     job = Jobs.IDLING;
                     guardTime = 0;
@@ -246,12 +245,13 @@ public class Duck {
 
 
             attack();
+            lib.enemySpawnPoints(rc.getLocation());
 
            // if(lib.
 
             move();
 
-            if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(8);
+            if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(17);
 
 
         }
@@ -272,19 +272,24 @@ public class Duck {
     }
 
     void move() throws GameActionException {
-        if(lib.detectCorner(directionGoing)){
-            directionGoing = rc.getLocation().directionTo(new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2));
-            //directionGoing = directionGoing.opposite();
+        if(lib.detectCorner(directionGoing) || lib.detectCorner(rc.getLocation(), 5)){
+           // directionGoing = rc.getLocation().directionTo(new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2));
+            if(rng.nextBoolean()){
+                directionGoing = directionGoing.rotateLeft().rotateLeft();
+            }
+            else {
+                directionGoing = directionGoing.rotateRight().rotateRight();
+            }
         }
         if(locationGoing == Lib.noLoc) {
             if (directionGoing != Direction.CENTER) {
                 nav.goTo(directionGoing);
-                turnsMovingInDirection++;
+                //turnsMovingInDirection++;
             }
         }
         else{
             if(job == Jobs.GUARDINGFLAGHOLDER) {
-                if (rc.getLocation().distanceSquaredTo(locationGoing) <= 5){
+                if (rc.getLocation().distanceSquaredTo(locationGoing) <= 10){
                     nav.goTo(locationGoing.directionTo(rc.getLocation()));
                 }
             }
