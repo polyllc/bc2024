@@ -520,4 +520,21 @@ public class Lib {
         return closest;
     }
 
+    public boolean isNearDam(MapLocation loc) throws GameActionException {
+        int i = 0;
+        for(Direction dir : directions){
+            if(rc.canSenseLocation(loc.add(dir))) {//technically we don't need this as it will be the robots location, but
+                if(isDam(loc.add(dir))){
+                    i++;
+                }
+            }
+        }
+        return i > 0;
+    }
+
+    public boolean isDam(MapLocation loc) throws GameActionException {
+        MapInfo mapInfo = rc.senseMapInfo(loc);
+        return !mapInfo.isWater() && !mapInfo.isWall() && !rc.sensePassability(loc);
+    }
+
 }
