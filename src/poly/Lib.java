@@ -2,6 +2,7 @@ package poly;
 
 import battlecode.common.*;
 
+import java.util.Arrays;
 import java.util.Map;
 
 
@@ -380,13 +381,15 @@ public class Lib {
     }
 
     public int getNextClearFlagIndex() throws GameActionException {
-        if(getEnemyFlagLoc(1).equals(noFlag) || getEnemyFlagLoc(1).equals(new MapLocation(-1,-1))) {
+        MapLocation[] flags = new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)};
+        System.out.println(Arrays.toString(flags));
+        if(getEnemyFlagLoc(1).equals(noLoc) || getEnemyFlagLoc(1).equals(new MapLocation(-1,-1))) {
             return 1;
-        } else if(getEnemyFlagLoc(2).equals(noFlag) || getEnemyFlagLoc(2).equals(new MapLocation(-1,-1))){
+        } else if(getEnemyFlagLoc(2).equals(noLoc) || getEnemyFlagLoc(2).equals(new MapLocation(-1,-1))){
             return 2;
-        } else if(getEnemyFlagLoc(3).equals(noFlag)|| getEnemyFlagLoc(3).equals(new MapLocation(-1,-1))){
+        } else if(getEnemyFlagLoc(3).equals(noLoc)|| getEnemyFlagLoc(3).equals(new MapLocation(-1,-1))){
             return 3;
-        } else if(getEnemyFlagLoc(4).equals(noFlag) || getEnemyFlagLoc(4).equals(new MapLocation(-1,-1))) {
+        } else if(getEnemyFlagLoc(4).equals(noLoc) || getEnemyFlagLoc(4).equals(new MapLocation(-1,-1))) {
             return 4;
         } else {
             return 0;
