@@ -322,12 +322,10 @@ public class Lib {
 
     public FlagInfo[] getNearestFlags(MapLocation loc) throws GameActionException {
         FlagInfo[] flagInfos = rc.senseNearbyFlags(-1);
-        if(flagInfos.length > 0){
-            for(FlagInfo flag : flagInfos){
-                if(!flag.isPickedUp()){
-                    if(flag.getTeam() != rc.getTeam()){
-                        return new FlagInfo[]{flag};
-                    }
+        for (FlagInfo flag : flagInfos) {
+            if (!flag.isPickedUp()) {
+                if (flag.getTeam() != rc.getTeam()) {
+                    return new FlagInfo[]{flag};
                 }
             }
         }
@@ -395,7 +393,7 @@ public class Lib {
 
     public int getNextClearFlagIndex() throws GameActionException {
         MapLocation[] flags = new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)};
-        System.out.println(Arrays.toString(flags));
+        //System.out.println(Arrays.toString(flags));
         if(getEnemyFlagLoc(1).equals(noLoc) || getEnemyFlagLoc(1).equals(new MapLocation(-1,-1))) {
             return 1;
         } else if(getEnemyFlagLoc(2).equals(noLoc) || getEnemyFlagLoc(2).equals(new MapLocation(-1,-1))){
@@ -501,7 +499,7 @@ public class Lib {
                 if (enemySpawn.isSpawnZone()) {
                     int teamInInt = rc.getTeam().opponent() == Team.A ? 1 : 2;
                     if (enemySpawn.getSpawnZoneTeam() == teamInInt) {
-                        autofillEnemySpawnPoints(loc);
+                        autofillEnemySpawnPoints(enemySpawn.getMapLocation());
                     }
                 }
             }
@@ -537,7 +535,8 @@ public class Lib {
     // - what is really cool is that the code is the exact same, except the quadrants will be different depending on the symmetry
 
     public void autofillEnemySpawnPoints(MapLocation loc) throws GameActionException {
-        if(horizontalCalc(loc) != noLoc){
+        if(horizontalCalc(loc.add(rc.getLocation().directionTo(loc))) != noLoc){
+            System.out.println("Using Horizontal Calculations: " + loc.add(rc.getLocation().directionTo(loc)));
             for(MapLocation spawns : allySpawnZones()) {
                 MapLocation enemyLoc = new MapLocation(spawns.x, rc.getMapHeight()-spawns.y);
                 if (!isEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)))) {
@@ -546,7 +545,8 @@ public class Lib {
             }
         }
 
-        if(verticalCalc(loc) != noLoc){
+        if(verticalCalc(loc.add(rc.getLocation().directionTo(loc))) != noLoc){
+            System.out.println("Using Vertical   Calculations");
             for(MapLocation spawns : allySpawnZones()) {
                 MapLocation enemyLoc = new MapLocation(rc.getMapHeight()-spawns.x, spawns.y);
                 if (!isEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)))) {
@@ -556,6 +556,7 @@ public class Lib {
         }
 
         if(rotationalCalc(loc) != noLoc){
+            System.out.println("Using Rotational Calculations");
             for(MapLocation spawns : allySpawnZones()) {
                 int q = getQuadrant(spawns);
                 MapLocation origin = getOrigin(q);
@@ -584,8 +585,8 @@ public class Lib {
                     case 4: realX = otherOrigin.x + Math.abs(xOffset); realY = otherOrigin.y - Math.abs(yOffset); break;
                 }
                 MapLocation enemyLoc = new MapLocation(realX, realY);
-                if (!isEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)))) {
-                    setEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)));
+                if (!isEnemyCenter(enemyLoc)) {
+                    setEnemyCenter(enemyLoc);
                 }
             }
         }
@@ -594,7 +595,7 @@ public class Lib {
     MapLocation horizontalCalc(MapLocation loc) throws GameActionException {
         for(MapLocation allySpawn : allySpawnZones()){
             MapLocation currentGuess = new MapLocation(allySpawn.x, rc.getMapHeight()-allySpawn.y);
-            if(loc.distanceSquaredTo(currentGuess) < 6){
+            if(loc.distanceSquaredTo(currentGuess) < 3){
                 return currentGuess;
             }
         }
@@ -604,7 +605,7 @@ public class Lib {
     MapLocation verticalCalc(MapLocation loc) throws GameActionException {
         for(MapLocation allySpawn : allySpawnZones()){
             MapLocation currentGuess = new MapLocation(rc.getMapHeight()-allySpawn.x, allySpawn.y);
-            if(loc.distanceSquaredTo(currentGuess) < 6){
+            if(loc.distanceSquaredTo(currentGuess) < 3){
                 return currentGuess;
             }
         }
@@ -639,7 +640,7 @@ public class Lib {
                 case 3: realX = otherOrigin.x - Math.abs(xOffset); realY = otherOrigin.y - Math.abs(yOffset); break;
                 case 4: realX = otherOrigin.x + Math.abs(xOffset); realY = otherOrigin.y - Math.abs(yOffset); break;
             }
-            if(new MapLocation(realX, realY).distanceSquaredTo(loc) < 6){
+            if(new MapLocation(realX, realY).distanceSquaredTo(loc) < 3){
                 return new MapLocation(realX, realY);
             }
         }

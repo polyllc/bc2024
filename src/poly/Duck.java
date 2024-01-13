@@ -94,7 +94,8 @@ public class Duck {
                     }
 
                     findFlag();
-                    directionGoing = getNextDirection();
+
+                   // directionGoing = getNextDirection();
                 }
             }
 
@@ -158,7 +159,7 @@ public class Duck {
                         }
                     }
                 }
-                if(!rc.hasFlag()){
+                if(lib.getNearestFlags(rc.getLocation()).length > 0 && lib.getNearestFlags(rc.getLocation())[0].isPickedUp()){ //todo fix this
                     job = Jobs.IDLING;
                     locationGoing = Lib.noLoc;
                     directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
@@ -172,7 +173,7 @@ public class Duck {
                     flagCarrierIndex = lib.getNextClearFlagIndex();
                 }
                 lib.setEnemyFlagLoc(rc.getLocation(), flagCarrierIndex);
-                System.out.println("Set position to: " + lib.getEnemyFlagLoc(flagCarrierIndex) + " vs " + rc.getLocation() + " and flag num " + flagCarrierIndex);
+              //  System.out.println("Set position to: " + lib.getEnemyFlagLoc(flagCarrierIndex) + " vs " + rc.getLocation() + " and flag num " + flagCarrierIndex);
                 if(lib.contains(rc.getAllySpawnLocations(), rc.getLocation())){
                     job = Jobs.IDLING;
                     if(rc.canDropFlag(rc.getLocation())) {
@@ -252,7 +253,7 @@ public class Duck {
                     else {
                         directionGoing = rc.getLocation().directionTo(nearestEnemyCenter);
                     }
-                    System.out.println("Going to nearest enemy center: " + nearestEnemyCenter);
+                   // System.out.println("Going to nearest enemy center: " + nearestEnemyCenter);
                     flagCarrierIndex = 0;
                     job = Jobs.IDLING;
                     guardTime = 0;
@@ -267,13 +268,15 @@ public class Duck {
 
             move();
 
-            if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(35);
+       //     if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(35);
 
-
+           // rc.setIndicatorString(Arrays.toString(rc.senseNearbyFlags(-1, rc.getTeam().opponent())));
         }
-        if(rc.getRoundNum() > 10){
+        if(rc.getRoundNum() > 400){
             //rc.resign();
         }
+
+
     }
 
     private void findFlag() throws GameActionException {
@@ -341,6 +344,6 @@ public class Duck {
     }
 
     Direction getNextDirection(){
-        return Lib.directions[rng.nextInt(8)-1];
+        return Lib.directions[rng.nextInt(8)];
     }
 }
