@@ -94,6 +94,7 @@ public class Duck {
                     }
 
                     findFlag();
+                    directionGoing = getNextDirection();
                 }
             }
 
@@ -109,7 +110,7 @@ public class Duck {
                             crumbPlace = Lib.noLoc;
                             locationGoing = Lib.noLoc;
                             if(rc.getRoundNum() > 200) {
-                                directionGoing = Lib.directions[rng.nextInt(8)];
+                                directionGoing = directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                             }
                             else {
                                 directionGoing = rc.getLocation().directionTo(lib.mapCenter());
@@ -160,7 +161,7 @@ public class Duck {
                 if(!rc.hasFlag()){
                     job = Jobs.IDLING;
                     locationGoing = Lib.noLoc;
-                    directionGoing = Lib.directions[rng.nextInt(8)];
+                    directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                     lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                     flagCarrierIndex = 0;
                 }
@@ -179,12 +180,12 @@ public class Duck {
                         lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                     }
                     locationGoing = Lib.noLoc;
-                    directionGoing = Lib.directions[rng.nextInt(8)];
+                    directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                 }
                 if(!rc.hasFlag()){
                     job = Jobs.IDLING;
                     locationGoing = Lib.noLoc;
-                    directionGoing = Lib.directions[rng.nextInt(8)];
+                    directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                     lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                     flagCarrierIndex = 0;
                 }
@@ -198,6 +199,7 @@ public class Duck {
                     case 1: directionGoing = directionGoing.opposite().rotateLeft(); break;
                     case 2: directionGoing = directionGoing.opposite().rotateRight(); break;
                 }
+
                 turnsMovingInDirection = 0;
             }
 
@@ -232,7 +234,7 @@ public class Duck {
 
                 if(lib.contains(lib.spawnLocations, flagHolder)){
                     locationGoing = Lib.noLoc;
-                    directionGoing = Lib.directions[rng.nextInt(8)];
+                    directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                     flagCarrierIndex = 0;
                     job = Jobs.IDLING;
                 }
@@ -265,12 +267,12 @@ public class Duck {
 
             move();
 
-            if(rc.getRoundNum() % 1 == 0) lib.printSharedArray(35);
+            if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(35);
 
 
         }
         if(rc.getRoundNum() > 10){
-            rc.resign();
+            //rc.resign();
         }
     }
 
@@ -336,5 +338,9 @@ public class Duck {
                 rc.attack(robotInfos[0].getLocation());
             }
         }
+    }
+
+    Direction getNextDirection(){
+        return Lib.directions[rng.nextInt(8)-1];
     }
 }

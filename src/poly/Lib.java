@@ -495,21 +495,34 @@ public class Lib {
     //    horizontal reflection or vertical reflection by running some cool calculations
     // we can also make it so if it senses one of the corners, it will automagically register the mid-point as it can only be the opposite matching
     //    corner with the duck that discovers
-    // this sounds like a job for mr lukasz!
     public void enemySpawnPoints(MapLocation loc) throws GameActionException { //set enemy spawn points, the middle of the 3x3 area
-        for(MapInfo enemySpawn : rc.senseNearbyMapInfos()) {
-            if (enemySpawn.isSpawnZone()) {
-                int teamInInt = rc.getTeam().opponent() == Team.A ? 1 : 2;
-                if (enemySpawn.getSpawnZoneTeam() == teamInInt) {
-                    autofillEnemySpawnPoints(loc);
-                    if (checkIfCenter(loc)) {
-                        if(!isEnemyCenter(loc)) {
-                            setEnemyCenter(loc);
-                        }
+        if(enemySpawnZones().length < 3) {
+            for (MapInfo enemySpawn : rc.senseNearbyMapInfos()) {
+                if (enemySpawn.isSpawnZone()) {
+                    int teamInInt = rc.getTeam().opponent() == Team.A ? 1 : 2;
+                    if (enemySpawn.getSpawnZoneTeam() == teamInInt) {
+                        autofillEnemySpawnPoints(loc);
                     }
                 }
             }
         }
+    }
+
+    public MapLocation[] enemySpawnZones() throws GameActionException {
+        MapLocation[] zones = new MapLocation[0];
+        if(!new MapLocation(rc.readSharedArray(11), rc.readSharedArray(12)).equals(new MapLocation(0,0))){
+            zones = new MapLocation[]{new MapLocation(rc.readSharedArray(11), rc.readSharedArray(12))};
+            if(!new MapLocation(rc.readSharedArray(13), rc.readSharedArray(14)).equals(new MapLocation(0,0))){
+                zones = new MapLocation[]{new MapLocation(rc.readSharedArray(11), rc.readSharedArray(12)),
+                        new MapLocation(rc.readSharedArray(13), rc.readSharedArray(14))};
+                if(!new MapLocation(rc.readSharedArray(15), rc.readSharedArray(16)).equals(new MapLocation(0,0))){
+                    zones = new MapLocation[]{new MapLocation(rc.readSharedArray(11), rc.readSharedArray(12)),
+                            new MapLocation(rc.readSharedArray(13), rc.readSharedArray(14)),
+                            new MapLocation(rc.readSharedArray(15), rc.readSharedArray(16))};
+                }
+            }
+        }
+        return zones;
     }
 
     //ok this will be a bit complicated so ill explain:
@@ -522,8 +535,115 @@ public class Lib {
     // - with mirrored symmetry along the y-axis, that is also easy by just calculating the distance and adding it from that origin
     // - same thing with x-axis
     // - what is really cool is that the code is the exact same, except the quadrants will be different depending on the symmetry
-    public void autofillEnemySpawnPoints(MapLocation loc){
 
+    public void autofillEnemySpawnPoints(MapLocation loc) throws GameActionException {
+        if(horizontalCalc(loc) != noLoc){
+            for(MapLocation spawns : allySpawnZones()) {
+                MapLocation enemyLoc = new MapLocation(spawns.x, rc.getMapHeight()-spawns.y);
+                if (!isEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)))) {
+                    setEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)));
+                }
+            }
+        }
+
+        if(verticalCalc(loc) != noLoc){
+            for(MapLocation spawns : allySpawnZones()) {
+                MapLocation enemyLoc = new MapLocation(rc.getMapHeight()-spawns.x, spawns.y);
+                if (!isEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)))) {
+                    setEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)));
+                }
+            }
+        }
+
+        if(rotationalCalc(loc) != noLoc){
+            for(MapLocation spawns : allySpawnZones()) {
+                int q = getQuadrant(spawns);
+                MapLocation origin = getOrigin(q);
+                int xOffset = spawns.x - origin.x;
+                int yOffset = spawns.y - origin.y;
+                int oppositeQ = 0;
+                if(q == 1){
+                    oppositeQ = 3;
+                }
+                if(q == 2){
+                    oppositeQ = 4;
+                }
+                if(q == 3){
+                    oppositeQ = 1;
+                }
+                if(q == 4){
+                    oppositeQ = 2;
+                }
+                MapLocation otherOrigin = getOrigin(oppositeQ);
+                int realX = 0;
+                int realY = 0;
+                switch (oppositeQ){
+                    case 1: realX = otherOrigin.x + Math.abs(xOffset); realY = otherOrigin.y + Math.abs(yOffset); break;
+                    case 2: realX = otherOrigin.x - Math.abs(xOffset); realY = otherOrigin.y + Math.abs(yOffset); break;
+                    case 3: realX = otherOrigin.x - Math.abs(xOffset); realY = otherOrigin.y - Math.abs(yOffset); break;
+                    case 4: realX = otherOrigin.x + Math.abs(xOffset); realY = otherOrigin.y - Math.abs(yOffset); break;
+                }
+                MapLocation enemyLoc = new MapLocation(realX, realY);
+                if (!isEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)))) {
+                    setEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)));
+                }
+            }
+        }
+    }
+
+    MapLocation horizontalCalc(MapLocation loc) throws GameActionException {
+        for(MapLocation allySpawn : allySpawnZones()){
+            MapLocation currentGuess = new MapLocation(allySpawn.x, rc.getMapHeight()-allySpawn.y);
+            if(loc.distanceSquaredTo(currentGuess) < 6){
+                return currentGuess;
+            }
+        }
+        return noLoc;
+    }
+
+    MapLocation verticalCalc(MapLocation loc) throws GameActionException {
+        for(MapLocation allySpawn : allySpawnZones()){
+            MapLocation currentGuess = new MapLocation(rc.getMapHeight()-allySpawn.x, allySpawn.y);
+            if(loc.distanceSquaredTo(currentGuess) < 6){
+                return currentGuess;
+            }
+        }
+        return noLoc;
+    }
+
+    MapLocation rotationalCalc(MapLocation loc) throws GameActionException {
+        for(MapLocation allySpawn : allySpawnZones()){
+            int q = getQuadrant(allySpawn);
+            MapLocation origin = getOrigin(q);
+            int xOffset = allySpawn.x - origin.x;
+            int yOffset = allySpawn.y - origin.y;
+            int oppositeQ = 0;
+            if(q == 1){
+                oppositeQ = 3;
+            }
+            if(q == 2){
+                oppositeQ = 4;
+            }
+            if(q == 3){
+                oppositeQ = 1;
+            }
+            if(q == 4){
+                oppositeQ = 2;
+            }
+            MapLocation otherOrigin = getOrigin(oppositeQ);
+            int realX = 0;
+            int realY = 0;
+            switch (oppositeQ){
+                case 1: realX = otherOrigin.x + Math.abs(xOffset); realY = otherOrigin.y + Math.abs(yOffset); break;
+                case 2: realX = otherOrigin.x - Math.abs(xOffset); realY = otherOrigin.y + Math.abs(yOffset); break;
+                case 3: realX = otherOrigin.x - Math.abs(xOffset); realY = otherOrigin.y - Math.abs(yOffset); break;
+                case 4: realX = otherOrigin.x + Math.abs(xOffset); realY = otherOrigin.y - Math.abs(yOffset); break;
+            }
+            if(new MapLocation(realX, realY).distanceSquaredTo(loc) < 6){
+                return new MapLocation(realX, realY);
+            }
+        }
+        return noLoc;
     }
 
     public boolean checkIfCenter(MapLocation loc) throws GameActionException {
@@ -556,10 +676,7 @@ public class Lib {
             return true;
         } else if(new MapLocation(rc.readSharedArray(13), rc.readSharedArray(14)).equals(loc)){
             return true;
-        } else if(new MapLocation(rc.readSharedArray(15), rc.readSharedArray(16)).equals(loc)){
-            return true;
-        }
-        return false;
+        } else return new MapLocation(rc.readSharedArray(15), rc.readSharedArray(16)).equals(loc);
     }
 
     public MapLocation getNearestEnemyCenter(MapLocation loc) throws GameActionException {
