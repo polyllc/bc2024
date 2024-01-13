@@ -23,6 +23,7 @@ public class Duck {
     int turnsMovingInDirection = 0;
     int guardTime = 0;
 
+    boolean stopMoving = false;
 
     int flagCarrierIndex = 0;
 
@@ -66,6 +67,11 @@ public class Duck {
             }
         }
         else{
+
+            if(rc.getRoundNum() == 2){
+                lib.setAllySpawnZones(rc.getLocation());
+            }
+
             //we want to explore around so
             if(directionGoing == Direction.CENTER){
                 //we don't want it to not do anything, but most likely that won't happen for now
@@ -88,6 +94,8 @@ public class Duck {
                     }
 
                     findFlag();
+
+                   // directionGoing = getNextDirection();
                 }
             }
 
@@ -103,7 +111,7 @@ public class Duck {
                             crumbPlace = Lib.noLoc;
                             locationGoing = Lib.noLoc;
                             if(rc.getRoundNum() > 200) {
-                                directionGoing = Lib.directions[rng.nextInt(8)];
+                                directionGoing = directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                             }
                             else {
                                 directionGoing = rc.getLocation().directionTo(lib.mapCenter());
@@ -151,10 +159,10 @@ public class Duck {
                         }
                     }
                 }
-                if(!rc.hasFlag()){
+                if(lib.getNearestFlags(rc.getLocation()).length > 0 && lib.getNearestFlags(rc.getLocation())[0].isPickedUp()){ //todo fix this
                     job = Jobs.IDLING;
                     locationGoing = Lib.noLoc;
-                    directionGoing = Lib.directions[rng.nextInt(8)];
+                    directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                     lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                     flagCarrierIndex = 0;
                 }
@@ -165,7 +173,7 @@ public class Duck {
                     flagCarrierIndex = lib.getNextClearFlagIndex();
                 }
                 lib.setEnemyFlagLoc(rc.getLocation(), flagCarrierIndex);
-                System.out.println("Set position to: " + lib.getEnemyFlagLoc(flagCarrierIndex) + " vs " + rc.getLocation() + " and flag num " + flagCarrierIndex);
+              //  System.out.println("Set position to: " + lib.getEnemyFlagLoc(flagCarrierIndex) + " vs " + rc.getLocation() + " and flag num " + flagCarrierIndex);
                 if(lib.contains(rc.getAllySpawnLocations(), rc.getLocation())){
                     job = Jobs.IDLING;
                     if(rc.canDropFlag(rc.getLocation())) {
@@ -173,12 +181,12 @@ public class Duck {
                         lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                     }
                     locationGoing = Lib.noLoc;
-                    directionGoing = Lib.directions[rng.nextInt(8)];
+                    directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                 }
                 if(!rc.hasFlag()){
                     job = Jobs.IDLING;
                     locationGoing = Lib.noLoc;
-                    directionGoing = Lib.directions[rng.nextInt(8)];
+                    directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                     lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                     flagCarrierIndex = 0;
                 }
@@ -187,18 +195,16 @@ public class Duck {
            rc.setIndicatorString("location Going: " + locationGoing + " , Job: " + job + " direction: " + directionGoing);
 
             if(turnsMovingInDirection > (rc.getMapHeight() + rc.getMapWidth())){
-                switch(rc.getRoundNum() % 3){
-                  //  case 0: directionGoing = directionGoing.opposite(); break;
+                switch(rng.nextInt(3)-1){
+                    case 0: directionGoing = directionGoing.opposite(); break;
                     case 1: directionGoing = directionGoing.opposite().rotateLeft(); break;
                     case 2: directionGoing = directionGoing.opposite().rotateRight(); break;
                 }
+
                 turnsMovingInDirection = 0;
             }
 
-            if(job == Jobs.GUARDINGFLAGHOLDER){ //todo, if the flag holder dies, well this doesn't update, so do that
-
-
-
+            if(job == Jobs.GUARDINGFLAGHOLDER){
                 findFlag();
 
                 MapLocation flagHolder = lib.getEnemyFlagLoc(flagCarrierIndex);
@@ -222,10 +228,14 @@ public class Duck {
                         flagHolder = Lib.noLoc;
                     }
                 }
+                else {
+                    lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                    flagHolder = Lib.noLoc;
+                }
 
                 if(lib.contains(lib.spawnLocations, flagHolder)){
                     locationGoing = Lib.noLoc;
-                    directionGoing = Lib.directions[rng.nextInt(8)];
+                    directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                     flagCarrierIndex = 0;
                     job = Jobs.IDLING;
                 }
@@ -236,7 +246,14 @@ public class Duck {
                 }
                 else {
                     locationGoing = Lib.noLoc;
-                    directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
+                    MapLocation nearestEnemyCenter = lib.getNearestEnemyCenter(rc.getLocation());
+                    if(nearestEnemyCenter.equals(Lib.noLoc)){
+                        directionGoing = rc.getLocation().directionTo(lib.mapCenter());
+                    }
+                    else {
+                        directionGoing = rc.getLocation().directionTo(nearestEnemyCenter);
+                    }
+                   // System.out.println("Going to nearest enemy center: " + nearestEnemyCenter);
                     flagCarrierIndex = 0;
                     job = Jobs.IDLING;
                     guardTime = 0;
@@ -251,13 +268,15 @@ public class Duck {
 
             move();
 
-            if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(17);
+       //     if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(35);
+
+           // rc.setIndicatorString(Arrays.toString(rc.senseNearbyFlags(-1, rc.getTeam().opponent())));
+        }
+        if(rc.getRoundNum() > 400){
+            //rc.resign();
+        }
 
 
-        }
-        if(rc.getRoundNum() > 500){
-            rc.resign();
-        }
     }
 
     private void findFlag() throws GameActionException {
@@ -272,38 +291,46 @@ public class Duck {
     }
 
     void move() throws GameActionException {
-        if(lib.detectCorner(directionGoing) || lib.detectCorner(rc.getLocation(), 5)){
-           // directionGoing = rc.getLocation().directionTo(new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2));
-            if(rng.nextBoolean()){
-                directionGoing = directionGoing.rotateLeft().rotateLeft();
-            }
-            else {
-                directionGoing = directionGoing.rotateRight().rotateRight();
-            }
+
+        if(rc.getRoundNum() < 200) {
+            stopMoving = lib.isNearDam(rc.getLocation());
         }
-        if(locationGoing == Lib.noLoc) {
-            if (directionGoing != Direction.CENTER) {
-                nav.goTo(directionGoing);
-                //turnsMovingInDirection++;
-            }
+        else {
+            stopMoving = false;
         }
-        else{
-            if(job == Jobs.GUARDINGFLAGHOLDER) {
-                if (rc.getLocation().distanceSquaredTo(locationGoing) <= 10){
-                    nav.goTo(locationGoing.directionTo(rc.getLocation()));
+
+        if(!stopMoving) {
+            if (lib.detectCorner(directionGoing) || lib.detectCorner(rc.getLocation(), 5)) {
+                // directionGoing = rc.getLocation().directionTo(new MapLocation(rc.getMapWidth()/2, rc.getMapHeight()/2));
+                if (rng.nextBoolean()) {
+                    directionGoing = directionGoing.rotateLeft().rotateLeft();
+                } else {
+                    directionGoing = directionGoing.rotateRight().rotateRight();
                 }
             }
-           lastMovement = nav.goTo(locationGoing, false); //if we need to save bytecode, well this is where we're saving it
-           if(!lastMovement){
-               lastMovement = nav.bugNavTo(locationGoing);
-               if(!lastMovement){
-                   lastMovement = nav.navTo(locationGoing);
-                   if(!lastMovement){
-                      // lastMovement = nav.goTo(rc.getLocation().directionTo(locationGoing));
-                   }
-               }
-           }
-           turnsMovingInDirection = 0;
+            if (locationGoing == Lib.noLoc) {
+                if (directionGoing != Direction.CENTER) {
+                    nav.goTo(directionGoing);
+                    //turnsMovingInDirection++;
+                }
+            } else {
+                if (job == Jobs.GUARDINGFLAGHOLDER) {
+                    if (rc.getLocation().distanceSquaredTo(locationGoing) <= 10) {
+                        nav.goTo(locationGoing.directionTo(rc.getLocation()));
+                    }
+                }
+                lastMovement = nav.goTo(locationGoing, false); //if we need to save bytecode, well this is where we're saving it
+                if (!lastMovement) {
+                    lastMovement = nav.bugNavTo(locationGoing);
+                    if (!lastMovement) {
+                        lastMovement = nav.navTo(locationGoing);
+                        if (!lastMovement) {
+                            // lastMovement = nav.goTo(rc.getLocation().directionTo(locationGoing));
+                        }
+                    }
+                }
+                turnsMovingInDirection = 0;
+            }
         }
     }
 
@@ -314,5 +341,9 @@ public class Duck {
                 rc.attack(robotInfos[0].getLocation());
             }
         }
+    }
+
+    Direction getNextDirection(){
+        return Lib.directions[rng.nextInt(8)];
     }
 }
