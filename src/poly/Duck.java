@@ -59,7 +59,7 @@ public class Duck {
                     if (rc.canSpawn(loc.add(dir))) {
                         rc.spawn(loc.add(dir));
                         spawnLocation = loc.add(dir);
-                        directionGoing = loc.add(dir).directionTo(lib.mapCenter());
+                        directionGoing = loc.add(dir).directionTo(lib.mapCenter()); //spawn towards flags
                         job = Jobs.IDLING;
                         break;
                     }
@@ -78,6 +78,7 @@ public class Duck {
             }
 
             if(job == Jobs.IDLING) {
+                locationGoing = Lib.noLoc;
                 MapLocation[] crumbs = rc.senseNearbyCrumbs(20);
                 if (crumbs.length > 0) {
                     crumbPlace = crumbs[0];
@@ -86,17 +87,17 @@ public class Duck {
                 }
 
                 if(rc.getRoundNum() > 200){
+                    findFlag();
                     MapLocation nearestFlagCarrier = lib.getNearestFlagCarrier();
                     if(!nearestFlagCarrier.equals(Lib.noLoc) && !nearestFlagCarrier.equals(Lib.noFlag)){
                         job = Jobs.GUARDINGFLAGHOLDER;
                         flagCarrierIndex = lib.getFlagIndex(nearestFlagCarrier);
                         locationGoing = nearestFlagCarrier;
                     }
-
-                    findFlag();
-
                    // directionGoing = getNextDirection();
                 }
+
+                placeTraps();
             }
 
 
@@ -173,7 +174,7 @@ public class Duck {
                     flagCarrierIndex = lib.getNextClearFlagIndex();
                 }
                 lib.setEnemyFlagLoc(rc.getLocation(), flagCarrierIndex);
-              //  System.out.println("Set position to: " + lib.getEnemyFlagLoc(flagCarrierIndex) + " vs " + rc.getLocation() + " and flag num " + flagCarrierIndex);
+                System.out.println("Set position to: " + lib.getEnemyFlagLoc(flagCarrierIndex) + " vs " + rc.getLocation() + " and flag num " + flagCarrierIndex);
                 if(lib.contains(rc.getAllySpawnLocations(), rc.getLocation())){
                     job = Jobs.IDLING;
                     if(rc.canDropFlag(rc.getLocation())) {
@@ -192,7 +193,7 @@ public class Duck {
                 }
             }
 
-           rc.setIndicatorString("location Going: " + locationGoing + " , Job: " + job + " direction: " + directionGoing);
+           rc.setIndicatorString("loc: " + locationGoing + " , Job: " + job + " dir: " + directionGoing + " near: " + lib.getNearestFlagCarrier());
 
             if(turnsMovingInDirection > (rc.getMapHeight() + rc.getMapWidth())){
                 switch(rng.nextInt(3)-1){
@@ -204,33 +205,34 @@ public class Duck {
                 turnsMovingInDirection = 0;
             }
 
+            move();
+
             if(job == Jobs.GUARDINGFLAGHOLDER){
                 findFlag();
 
                 MapLocation flagHolder = lib.getEnemyFlagLoc(flagCarrierIndex);
 
-                if(rc.canSenseRobotAtLocation(flagHolder)){
-                    RobotInfo holder = rc.senseRobotAtLocation(flagHolder);
-                    if(holder != null){
-                        if(holder.getTeam() == rc.getTeam()){
-                            if(!holder.hasFlag){
+                if(rc.canSenseLocation(flagHolder)) {
+                    if (rc.canSenseRobotAtLocation(flagHolder)) {
+                        RobotInfo holder = rc.senseRobotAtLocation(flagHolder);
+                        if (holder != null) {
+                            if (holder.getTeam() == rc.getTeam()) {
+                                if (!holder.hasFlag) {
+                                    lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                                    flagHolder = Lib.noLoc;
+                                }
+                            } else {
                                 lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                                 flagHolder = Lib.noLoc;
                             }
-                        }
-                        else {
+                        } else {
                             lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                             flagHolder = Lib.noLoc;
                         }
-                    }
-                    else {
+                    } else {
                         lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                         flagHolder = Lib.noLoc;
                     }
-                }
-                else {
-                    lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
-                    flagHolder = Lib.noLoc;
                 }
 
                 if(lib.contains(lib.spawnLocations, flagHolder)){
@@ -266,14 +268,16 @@ public class Duck {
 
            // if(lib.
 
-            move();
+
+
+            senseFlags();
 
        //     if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(35);
 
            // rc.setIndicatorString(Arrays.toString(rc.senseNearbyFlags(-1, rc.getTeam().opponent())));
         }
         if(rc.getRoundNum() > 400){
-            //rc.resign();
+          //  rc.resign();
         }
 
 
@@ -286,7 +290,7 @@ public class Duck {
             locationGoing = nearestFlags[0].getLocation();
             job = Jobs.GETTINGFLAG;
             flagCarrierIndex = lib.getNextClearFlagIndex(); //we pray we hope, this will never be 0! (0, not 1)
-            System.out.println("flagCarrierIndex: " + flagCarrierIndex);
+            //System.out.println("flagCarrierIndex: " + flagCarrierIndex);
         }
     }
 
@@ -345,5 +349,55 @@ public class Duck {
 
     Direction getNextDirection(){
         return Lib.directions[rng.nextInt(8)];
+    }
+
+    void placeTraps() throws GameActionException {
+        if(rc.getRoundNum() < 200) {
+            if (lib.isNearDam(rc.getLocation())) {
+                    if (rc.canBuild(TrapType.EXPLOSIVE, rc.getLocation())){
+                        rc.build(TrapType.EXPLOSIVE, rc.getLocation());
+                    }
+            }
+        }
+    }
+
+    void senseFlags() throws GameActionException { //remove any unnecessary flag locations that aren't valid
+        MapLocation[] flags = new MapLocation[]{lib.getEnemyFlagLoc(1), lib.getEnemyFlagLoc(2), lib.getEnemyFlagLoc(3), lib.getEnemyFlagLoc(4)};
+        if(flags[0].equals(new MapLocation(-1, -1))){
+            flags[0] = Lib.noLoc;
+        }
+        if(flags[1].equals(new MapLocation(-1, -1))){
+            flags[1] = Lib.noLoc;
+        }
+        if(flags[2].equals(new MapLocation(-1, -1))){
+            flags[2] = Lib.noLoc;
+        }
+        if(flags[3].equals(new MapLocation(-1, -1))){
+            flags[3] = Lib.noLoc;
+        }
+        for(MapLocation flag : flags){
+            if(rc.canSenseLocation(flag)) {
+                if (rc.canSenseRobotAtLocation(flag)) {
+                    RobotInfo holder = rc.senseRobotAtLocation(flag);
+                    if (holder != null) {
+                        if (holder.getTeam() == rc.getTeam()) {
+                            if (!holder.hasFlag) {
+                                lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                                flag = Lib.noLoc;
+                            }
+                        } else {
+                            lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                            flag = Lib.noLoc;
+                        }
+                    } else {
+                        lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                        flag = Lib.noLoc;
+                    }
+                } else {
+                    lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                    flag = Lib.noLoc;
+                }
+            }
+        }
     }
 }
