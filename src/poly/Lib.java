@@ -373,6 +373,7 @@ public class Lib {
         }
 
         MapLocation closest = noLoc;
+        System.out.println(Arrays.toString(flags));
 
         if(flags[0].distanceSquaredTo(rc.getLocation()) <= closest.distanceSquaredTo(rc.getLocation())){
             closest = flags[0];
