@@ -4,9 +4,8 @@
 - announce when enemies nearby the flag
 - make the ducks decide whether they should heal nearby ducks or attack enemy ducks (use a best option algorithm if you will)
 - (M) place down traps!
-  - (M) on the dam
   - (M) on our flags (maybe when a certain round hits?)
-- (M) allow multiple pick up of the flags when they are close by
+- (M) allow multiple pick up of the flags when they are close by (this kinda works?)
 - (M) split ducks up into groups, based off of their spawn location
 
 
