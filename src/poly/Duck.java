@@ -33,7 +33,8 @@ public class Duck {
         GETTINGCRUMBS,
         IDLING,
         FINDINGFLAG,
-        GUARDINGFLAGHOLDER
+        GUARDINGFLAGHOLDER,
+        GUARDINGFLAG
     }
 
     Jobs job;
@@ -190,6 +191,52 @@ public class Duck {
                     directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                     lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                     flagCarrierIndex = 0;
+                }
+            }
+
+            if(job == Jobs.GUARDINGFLAG){
+                // for the ducks that are guarding our flags (possibly on the flag itself)
+                // if enemy within radii then anncounce that there's enemies
+                // turn other ducks to defense??????????
+                RobotInfo[] enemyRobots = enemiesInRadius();
+                if(enemyRobots.length > 0) {
+                    if (rc.canWriteSharedArray()) {
+
+                        rc.writeSharedArray(8, true);
+
+                        int nearestX; // proximity to flag, used later
+                        int nearestY;
+
+                        //loop thru enemy robots and find closest one
+
+                        for (enemy : enemyRobots) {
+                            int locX = MapLocation.x.enemy; //TODO pls get enemy x location
+                            int locY = MapLocation.y.enemy; // TODO pls get enemy y location
+                            //TODO pls get flag location
+                            int proxX = locX - //flag location , this is the difference between loc and flag loc
+                            int proxY = locY - //flag loaction
+                            int x = 0; // fix initial value later
+                            int y = 0;
+
+                            if (abs(proxX) < nearestX) {
+                                x = locX;
+                                nearestX = proxX;
+
+                            }
+
+                            if (abs(proxY) < nearestY) {
+                                y = locY;
+                                nearestY= yproxY;
+                            }
+                        }
+
+                        rc.writeSharedArray(9, x);
+                        rc.writeSharedArray(10, y);
+
+                    }
+                }
+                else{
+                    rc.writeSharedArray(8, false);
                 }
             }
 
@@ -359,6 +406,14 @@ public class Duck {
                     }
             }
         }
+    }
+
+    //returns all enemy ducks that are in the sight of this duck
+    private RobotInfo[] enemiesInRadius() throws GameActionException{
+        if(rc.getTeam() == Team.A){
+            return rc.senseNearbyRobots(GameConstants.VISION_RADIUS_SQUARED, Team.B);
+        }
+        return rc.senseNearbyRobots(GameConstants.VISION_RADIUS_SQUARED, Team.A);
     }
 
     void senseFlags() throws GameActionException { //remove any unnecessary flag locations that aren't valid
