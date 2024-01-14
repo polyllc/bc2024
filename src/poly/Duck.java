@@ -197,6 +197,7 @@ public class Duck {
             if(job == Jobs.GUARDINGFLAG){
                 // for the ducks that are guarding our flags (possibly on the flag itself)
                 // if enemy within radii then anncounce that there's enemies
+                // ASSUMES THAT THERES A DUCK ON THE FLAG
                 // turn other ducks to defense??????????
                 RobotInfo[] enemyRobots = enemiesInRadius();
                 if(enemyRobots.length > 0) {

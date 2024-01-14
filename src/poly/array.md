@@ -7,8 +7,8 @@ Index 5: Enemy Flag Location 3 Y
 Index 6: Enemy Flag Location 4 X
 Index 7: Enemy Flag Location 4 Y
 Index 8: Enemy Ducks near our flags (boolean)
-Index 9: Enemy Ducks near our flags X (nearest enemy location)
-Index 10: Enemy Ducks near our flags Y (nearest enemy location)
+Index 9: Ally Flag Being Attacked X
+Index 10: Ally Flag Being Attacked Y
 Index 11: Enemy Spawn Point 1 X
 Index 12: Enemy Spawn Point 1 Y
 Index 13: Enemy Spawn Point 2 X

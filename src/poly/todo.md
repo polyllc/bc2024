@@ -2,6 +2,7 @@
 - change the navigation code to also implement the fact that it would take less time to dig over water than go around
 - attack ducks that come close to flags
 - (J) announce when enemies nearby the flag
+- (J) update shared array with the flag that's under attack
 - make the ducks decide whether they should heal nearby ducks or attack enemy ducks (use a best option algorithm if you will)
 - (M) place down traps!
   - (M) on our flags (maybe when a certain round hits?)
