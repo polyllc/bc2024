@@ -200,43 +200,16 @@ public class Duck {
                 // turn other ducks to defense??????????
                 RobotInfo[] enemyRobots = enemiesInRadius();
                 if(enemyRobots.length > 0) {
-                    if (rc.canWriteSharedArray()) {
+                    if (rc.canWriteSharedArray(8, 1)) {
 
-                        rc.writeSharedArray(8, true);
-
-                        int nearestX; // proximity to flag, used later
-                        int nearestY;
-
-                        //loop thru enemy robots and find closest one
-
-                        for (enemy : enemyRobots) {
-                            int locX = MapLocation.x.enemy; //TODO pls get enemy x location
-                            int locY = MapLocation.y.enemy; // TODO pls get enemy y location
-                            //TODO pls get flag location
-                            int proxX = locX - //flag location , this is the difference between loc and flag loc
-                            int proxY = locY - //flag loaction
-                            int x = 0; // fix initial value later
-                            int y = 0;
-
-                            if (abs(proxX) < nearestX) {
-                                x = locX;
-                                nearestX = proxX;
-
-                            }
-
-                            if (abs(proxY) < nearestY) {
-                                y = locY;
-                                nearestY= yproxY;
-                            }
-                        }
-
-                        rc.writeSharedArray(9, x);
-                        rc.writeSharedArray(10, y);
+                        rc.writeSharedArray(8, 1);
+                        rc.writeSharedArray(9, rc.getLocation().x);
+                        rc.writeSharedArray(10, rc.getLocation().y);
 
                     }
                 }
                 else{
-                    rc.writeSharedArray(8, false);
+                    rc.writeSharedArray(8, 0);
                 }
             }
 
