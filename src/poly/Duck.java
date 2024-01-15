@@ -429,11 +429,26 @@ public class Duck {
                     }
                 }
             }
-
-            if(duckSkill.name().equals("ATTACK")) {
+            else if(duckSkill.name().equals("ATTACK")) {
                 for (RobotInfo opp : opponentsNear) {
                     if (opp.health < 151) {
                         attack();
+                    }
+                }
+            }
+            else { // ducks that are BUILD or none will choose based on # of ducks nearby
+                if(alliesNear.length < opponentsNear.length){
+                    for(RobotInfo ally : alliesNear){
+                        if(ally.health < 151){
+                            heal();
+                        }
+                    }
+                }
+                else {
+                    for (RobotInfo opp : opponentsNear) {
+                        if (opp.health < 151) {
+                            attack();
+                        }
                     }
                 }
             }
