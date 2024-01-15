@@ -325,7 +325,7 @@ public class Duck {
             }
 
 
-            attack();
+            healOrAttack();
             lib.enemySpawnPoints(rc.getLocation());
 
 
