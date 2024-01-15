@@ -21,7 +21,3 @@ Index 19: Ally Spawn Point 2 X
 Index 20: Ally Spawn Point 2 Y
 Index 21: Ally Spawn Point 3 X
 Index 22: Ally Spawn Point 3 Y
-Index 24: Next Point To Spawn
-Index 23: Ally SkillType (even or odd)
-
-
