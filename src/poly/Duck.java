@@ -112,7 +112,7 @@ public class Duck {
             }
 
             // assigns skillTypes
-            if(duckSkill.name().equals(null)){
+            if(duckSkill != SkillType.ATTACK && duckSkill != SkillType.HEAL){
               if(rc.readSharedArray(23) % 2 == 0) {
                   duckSkill = SkillType.HEAL;
                   rc.writeSharedArray(23, 1);
