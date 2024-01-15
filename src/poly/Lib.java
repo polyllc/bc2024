@@ -713,6 +713,26 @@ public class Lib {
         return closest;
     }
 
+
+    public MapLocation getNearestEnemyCenter(MapLocation loc, int nth) throws GameActionException {
+        MapLocation[] enemyCenter = new MapLocation[]{
+                new MapLocation(rc.readSharedArray(11), rc.readSharedArray(12)),
+                new MapLocation(rc.readSharedArray(13), rc.readSharedArray(14)),
+                new MapLocation(rc.readSharedArray(15), rc.readSharedArray(16))};
+
+        if(enemyCenter[0].equals(new MapLocation(0, 0))){
+            enemyCenter[0] = noLoc;
+        }
+        if(enemyCenter[1].equals(new MapLocation(0, 0))){
+            enemyCenter[1] = noLoc;
+        }
+        if(enemyCenter[2].equals(new MapLocation(0, 0))){
+            enemyCenter[2] = noLoc;
+        }
+
+        return enemyCenter[nth];
+    }
+
     public boolean isNearDam(MapLocation loc) throws GameActionException {
         int i = 0;
         for(Direction dir : directions){
@@ -766,4 +786,8 @@ public class Lib {
         return noLoc;
     }
 
+    public int nextPointToSpawn() throws GameActionException {
+        rc.writeSharedArray(23, (rc.readSharedArray(23) + 1) % 3);
+        return rc.readSharedArray(23);
+    }
 }
