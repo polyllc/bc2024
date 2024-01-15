@@ -373,7 +373,7 @@ public class Lib {
         }
 
         MapLocation closest = noLoc;
-        System.out.println(Arrays.toString(flags));
+        //System.out.println(Arrays.toString(flags));
 
         if(flags[0].distanceSquaredTo(rc.getLocation()) <= closest.distanceSquaredTo(rc.getLocation())){
             closest = flags[0];
@@ -728,6 +728,18 @@ public class Lib {
     public boolean isDam(MapLocation loc) throws GameActionException {
         MapInfo mapInfo = rc.senseMapInfo(loc);
         return !mapInfo.isWater() && !mapInfo.isWall() && !rc.sensePassability(loc);
+    }
+
+    //returns all enemy ducks that are in the sight of this duck
+    public RobotInfo[] enemiesInRadius() throws GameActionException{
+        if(rc.getTeam() == Team.A){
+            return rc.senseNearbyRobots(GameConstants.VISION_RADIUS_SQUARED, Team.B);
+        }
+        return rc.senseNearbyRobots(GameConstants.VISION_RADIUS_SQUARED, Team.A);
+    }
+
+    public MapLocation getAllyAttacked() throws GameActionException{
+        return new MapLocation(rc.readSharedArray(9), rc.readSharedArray(10));
     }
 
 }
