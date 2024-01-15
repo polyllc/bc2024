@@ -135,6 +135,8 @@ public class Duck {
             }
 
             if(job == Jobs.IDLING) {
+
+
                 locationGoing = Lib.noLoc;
                 MapLocation[] crumbs = rc.senseNearbyCrumbs(20);
                 if (crumbs.length > 0) {
@@ -156,6 +158,10 @@ public class Duck {
                         locationGoing = nearestFlagCarrier;
                     }
                    // directionGoing = getNextDirection();
+                }
+
+                if(rc.hasFlag()){
+                    job = Jobs.RETRIEVINGFLAG;
                 }
 
                 placeTraps();
@@ -220,6 +226,13 @@ public class Duck {
                             flagCarrierIndex = 0;
                         }
                     }
+                    if(lib.getNearestFlags(rc.getLocation()).length == 0){
+                        job = Jobs.IDLING;
+                        locationGoing = Lib.noLoc;
+                        directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
+                        lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                        flagCarrierIndex = 0;
+                    }
                 }
                 if(lib.getNearestFlags(rc.getLocation()).length > 0 && lib.getNearestFlags(rc.getLocation())[0].isPickedUp()){ //todo fix this
                     job = Jobs.IDLING;
@@ -243,6 +256,9 @@ public class Duck {
                 if(flagCarrierIndex == 0){
                     flagCarrierIndex = lib.getNextClearFlagIndex();
                 }
+                if(!lib.contains(rc.getAllySpawnLocations(), locationGoing)) {
+                    locationGoing = lib.getNearestSpawns(rc.getLocation())[0];
+                }
                 lib.setEnemyFlagLoc(rc.getLocation(), flagCarrierIndex);
                // System.out.println("Set position to: " + lib.getEnemyFlagLoc(flagCarrierIndex) + " vs " + rc.getLocation() + " and flag num " + flagCarrierIndex);
                 if(lib.contains(rc.getAllySpawnLocations(), rc.getLocation())){
@@ -254,13 +270,13 @@ public class Duck {
                     locationGoing = Lib.noLoc;
                     directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                 }
-                if(!rc.hasFlag()){
+               /* if(!rc.hasFlag()){
                     job = Jobs.IDLING;
                     locationGoing = Lib.noLoc;
                     directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                     lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                     flagCarrierIndex = 0;
-                }
+                }*/
             }
 
             if(job == Jobs.GUARDINGFLAG){
@@ -312,6 +328,11 @@ public class Duck {
             move();
 
             if(job == Jobs.GUARDINGFLAGHOLDER){
+
+                if(rc.hasFlag()){
+                    job = Jobs.RETRIEVINGFLAG;
+                }
+
                 findFlag();
 
                 MapLocation flagHolder = lib.getEnemyFlagLoc(flagCarrierIndex);
@@ -464,15 +485,15 @@ public class Duck {
                 }
             } else {
                 if (job == Jobs.GUARDINGFLAGHOLDER) {
-                    if (rc.getLocation().distanceSquaredTo(locationGoing) <= 10) {
+                    if (rc.getLocation().distanceSquaredTo(locationGoing) <= 15) {
                         nav.goTo(locationGoing.directionTo(rc.getLocation()));
                     }
                 }
                 lastMovement = nav.goTo(locationGoing, false); //if we need to save bytecode, well this is where we're saving it
                 if (!lastMovement) {
-                    lastMovement = nav.bugNavTo(locationGoing);
+                    //lastMovement = nav.bugNavTo(locationGoing);
                     if (!lastMovement) {
-                        lastMovement = nav.navTo(locationGoing);
+                    //    lastMovement = nav.navTo(locationGoing);
                         if (!lastMovement) {
                             // lastMovement = nav.goTo(rc.getLocation().directionTo(locationGoing));
                         }
