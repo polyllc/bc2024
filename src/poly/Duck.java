@@ -111,6 +111,18 @@ public class Duck {
                 }
             }
 
+            // assigns skillTypes
+            if(duckSkill.name().equals(null)){
+              if(rc.readSharedArray(23) % 2 == 0) {
+                  duckSkill = SkillType.HEAL;
+                  rc.writeSharedArray(23, 1);
+              }
+              else {
+                  duckSkill = SkillType.ATTACK;
+                  rc.writeSharedArray(23, 0);
+              }
+            }
+
             if(rc.getRoundNum() == 2){
                 lib.setAllySpawnZones(rc.getLocation());
             }
@@ -381,7 +393,7 @@ public class Duck {
             }
 
 
-            attack();
+            healOrAttack();
             lib.enemySpawnPoints(rc.getLocation());
 
 
@@ -478,6 +490,61 @@ public class Duck {
             }
         }
     }
+
+    void heal() throws GameActionException{
+        RobotInfo[] robotInfos = rc.senseNearbyRobots(-1, rc.getTeam());
+        if(robotInfos.length > 0){
+            if(rc.canHeal(robotInfos[0].getLocation())){
+                rc.heal(robotInfos[0].getLocation());
+            }
+        }
+    }
+
+
+    void healOrAttack() throws GameActionException {
+        RobotInfo[] opponentsNear = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
+        RobotInfo[] alliesNear = rc.senseNearbyRobots(-1, rc.getTeam());
+
+        if(opponentsNear.length > 0 && alliesNear.length > 0){
+            if(duckSkill.name().equals("HEAL")){
+                for(RobotInfo ally : alliesNear){
+                    if(ally.health < 151){
+                        heal();
+                    }
+                }
+                attack();
+            }
+            else if(duckSkill.name().equals("ATTACK")) {
+                for (RobotInfo opp : opponentsNear) {
+                    if (opp.health < 151) {
+                        attack();
+                    }
+                }
+                heal();
+            }
+            else { // ducks that are BUILD or none will choose based on # of ducks nearby
+                if(alliesNear.length < opponentsNear.length){
+                    for(RobotInfo ally : alliesNear){
+                        if(ally.health < 151){
+                            heal();
+                        }
+                    }
+                }
+                else {
+                    for (RobotInfo opp : opponentsNear) {
+                        if (opp.health < 151) {
+                            attack();
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+
+    }
+
 
     Direction getNextDirection(){
         return Lib.directions[rng.nextInt(8)];
