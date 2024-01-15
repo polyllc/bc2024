@@ -1,6 +1,7 @@
 package poly;
 
 import battlecode.common.*;
+import battlecode.world.Flag;
 
 
 import java.util.Arrays;
@@ -33,7 +34,8 @@ public class Duck {
         GETTINGCRUMBS,
         IDLING,
         FINDINGFLAG,
-        GUARDINGFLAGHOLDER
+        GUARDINGFLAGHOLDER,
+        GUARDINGFLAG
     }
 
     Jobs job;
@@ -54,6 +56,19 @@ public class Duck {
             MapLocation randomLoc = lib.spawnLocations[rng.nextInt(lib.spawnLocations.length)];
          //   System.out.println(Arrays.toString(lib.spawnLocations));
             // for now this is random, but in the future, we spawn where it is most needed
+
+
+
+            if(rc.getRoundNum() > 200) {
+                for(MapLocation loc : lib.allySpawnZones()){
+                    if(rc.canSenseLocation(loc)) {
+                        if (rc.senseRobotAtLocation(loc) != null) {
+
+                        }
+                    }
+                }
+            }
+
             for(MapLocation loc : lib.spawnLocations) {
                 for (Direction dir : Lib.directions) {
                     if (rc.canSpawn(loc.add(dir))) {
@@ -65,8 +80,19 @@ public class Duck {
                     }
                 }
             }
+
         }
         else{
+
+            // assigns a duck to stay on the flag
+            FlagInfo[] flagInfos = rc.senseNearbyFlags(-1, rc.getTeam());
+            if(flagInfos.length > 0) {
+                if(rc.canSenseLocation(flagInfos[0].getLocation())) {
+                    if(rc.senseRobotAtLocation(flagInfos[0].getLocation()) == null || rc.getLocation().equals(flagInfos[0].getLocation())) {
+                        job = Jobs.GUARDINGFLAG;
+                    }
+                }
+            }
 
             if(rc.getRoundNum() == 2){
                 lib.setAllySpawnZones(rc.getLocation());
@@ -174,7 +200,7 @@ public class Duck {
                     flagCarrierIndex = lib.getNextClearFlagIndex();
                 }
                 lib.setEnemyFlagLoc(rc.getLocation(), flagCarrierIndex);
-                System.out.println("Set position to: " + lib.getEnemyFlagLoc(flagCarrierIndex) + " vs " + rc.getLocation() + " and flag num " + flagCarrierIndex);
+               // System.out.println("Set position to: " + lib.getEnemyFlagLoc(flagCarrierIndex) + " vs " + rc.getLocation() + " and flag num " + flagCarrierIndex);
                 if(lib.contains(rc.getAllySpawnLocations(), rc.getLocation())){
                     job = Jobs.IDLING;
                     if(rc.canDropFlag(rc.getLocation())) {
@@ -191,6 +217,37 @@ public class Duck {
                     lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                     flagCarrierIndex = 0;
                 }
+            }
+
+            if(job == Jobs.GUARDINGFLAG){
+                // for the ducks that are guarding our flags (possibly on the flag itself)
+                // if enemy within radii then announce that there's enemies
+                // ASSUMES THAT THERE'S A DUCK ON THE FLAG
+                // turn other ducks to defense??????????
+                RobotInfo[] enemyRobots = lib.enemiesInRadius();
+                if(enemyRobots.length > 0) {
+                    if (rc.canWriteSharedArray(8, 1)) {
+                        rc.writeSharedArray(8, 1);
+                        rc.writeSharedArray(9, rc.getLocation().x);
+                        rc.writeSharedArray(10, rc.getLocation().y);
+                    }
+                }
+                else if(lib.getAllyAttacked().distanceSquaredTo(rc.getLocation()) < 5){
+                    rc.writeSharedArray(8, 0);
+                }
+
+                if(flagInfos.length > 0){
+                    locationGoing = flagInfos[0].getLocation();
+                    if(rc.senseRobotAtLocation(locationGoing) != null){
+                        if(rc.senseRobotAtLocation(locationGoing).getID() != rc.getID()){
+                            job = Jobs.IDLING;
+                            locationGoing = Lib.noLoc;
+                            System.out.println("going back to idle");
+                        }
+                    }
+                }
+
+
             }
 
            rc.setIndicatorString("loc: " + locationGoing + " , Job: " + job + " dir: " + directionGoing + " near: " + lib.getNearestFlagCarrier());
@@ -266,13 +323,11 @@ public class Duck {
             attack();
             lib.enemySpawnPoints(rc.getLocation());
 
-           // if(lib.
-
 
 
             senseFlags();
 
-       //     if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(35);
+           // if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(11);
 
            // rc.setIndicatorString(Arrays.toString(rc.senseNearbyFlags(-1, rc.getTeam().opponent())));
         }
@@ -360,6 +415,8 @@ public class Duck {
             }
         }
     }
+
+
 
     void senseFlags() throws GameActionException { //remove any unnecessary flag locations that aren't valid
         MapLocation[] flags = new MapLocation[]{lib.getEnemyFlagLoc(1), lib.getEnemyFlagLoc(2), lib.getEnemyFlagLoc(3), lib.getEnemyFlagLoc(4)};
