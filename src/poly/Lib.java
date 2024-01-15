@@ -742,4 +742,28 @@ public class Lib {
         return new MapLocation(rc.readSharedArray(9), rc.readSharedArray(10));
     }
 
+    //gets the group number based off of the placement of the ally spawn zones in the shared array
+    public int getGroupNumber() throws GameActionException {
+        MapLocation[] allys = allySpawnZones();
+        if(rc.getLocation().distanceSquaredTo(allys[0]) < 10){
+            return 1;
+        }
+        if(rc.getLocation().distanceSquaredTo(allys[1]) < 10){
+            return 2;
+        }
+        if(rc.getLocation().distanceSquaredTo(allys[2]) < 10){
+            return 3;
+        }
+        return 0;
+    }
+
+    public MapLocation getEnemyWithFlagNearby(RobotInfo[] robots) throws GameActionException {
+        for(RobotInfo robot : robots){
+            if(robot.hasFlag){
+                return robot.getLocation();
+            }
+        }
+        return noLoc;
+    }
+
 }
