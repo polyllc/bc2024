@@ -790,4 +790,24 @@ public class Lib {
         rc.writeSharedArray(24, (rc.readSharedArray(24) + 1) % 3);
         return rc.readSharedArray(24);
     }
+
+    //Using the rc, returns a 0,1,2,3 if they are up, left, right, and down respectively depending on what border they are on
+    // If they are on multiple, returns the first one in the above order. If on none, returns -1
+    public int borderDetection(){
+        if(! rc.canMove(Direction.NORTH)){
+            return 0;
+        }
+        else if(! rc.canMove(Direction.WEST)){
+            return 1;
+        }
+        else if(! rc.canMove(Direction.EAST)){
+            return 2;
+        }
+        else if(! rc.canMove(Direction.SOUTH)){
+            return 3;
+        }
+        else {
+            return -1;
+        }
+    }
 }

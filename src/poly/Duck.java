@@ -142,6 +142,66 @@ public class Duck {
                     locationGoing = crumbs[0];
                     job = Jobs.GETTINGCRUMBS;
                 }
+                int x = lib.borderDetection();
+                if(x != -1){
+                    if(x == 0){
+                        switch(this.directionGoing){
+                            case EAST:
+                            case NORTHEAST:
+                                canAndMove(Direction.SOUTHEAST);
+                                break;
+                            case WEST:
+                            case NORTHWEST:
+                                canAndMove(Direction.SOUTHWEST);
+                                break;
+                            case NORTH:
+                                canAndMove(Direction.SOUTH);
+                        }
+                    }
+                    else if(x == 1){
+                        switch(this.directionGoing){
+                            case NORTH:
+                            case NORTHWEST:
+                                canAndMove(Direction.NORTHEAST);
+                                break;
+                            case SOUTH:
+                            case SOUTHWEST:
+                                canAndMove(Direction.SOUTHEAST);
+                                break;
+                            case WEST:
+                                canAndMove(Direction.EAST);
+                        }
+                    }
+                    else if(x == 2){
+                        switch(this.directionGoing){
+                            case NORTH:
+                            case NORTHEAST:
+                                canAndMove(Direction.NORTHWEST);
+                                break;
+                            case SOUTH:
+                            case SOUTHEAST:
+                                canAndMove(Direction.SOUTHWEST);
+                                break;
+                            case EAST:
+                                canAndMove(Direction.WEST);
+                        }
+                    }
+                    else if(x == 3){
+                        switch(this.directionGoing){
+                            case EAST:
+                            case SOUTHEAST:
+                                canAndMove(Direction.NORTHEAST);
+                                break;
+                            case WEST:
+                            case SOUTHWEST:
+                                canAndMove(Direction.NORTHWEST);
+                                break;
+                            case SOUTH:
+                                canAndMove(Direction.NORTH);
+                        }
+                    }
+                }
+
 
                 if(rc.getRoundNum() > 500) {
 
@@ -614,6 +674,13 @@ public class Duck {
                     flag = Lib.noLoc;
                 }
             }
+        }
+    }
+
+    //Given a direction, checks if the duck can move there. If it can, sets the movement direction there, else does nothing
+    public void canAndMove(Direction direct){
+        if(rc.canMove(direct)){
+            this.directionGoing = direct;
         }
     }
 }
