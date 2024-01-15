@@ -398,14 +398,46 @@ public class Duck {
         }
     }
 
-    void attack() throws GameActionException{
+    /*void healOrAttack() throws GameActionException{
         RobotInfo[] robotInfos = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
         if(robotInfos.length > 0){
             if(rc.canAttack(robotInfos[0].getLocation())){
                 rc.attack(robotInfos[0].getLocation());
             }
         }
+    } */
+
+    void healOrAttack() throws GameActionException {
+        RobotInfo[] opponentsNear = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
+        RobotInfo[] alliesNear = rc.senseNearbyRobots(-1, rc.getTeam());
+
+        if(opponentsNear.length > 0 && alliesNear.length > 0){
+            if(duckSkill.name().equals("HEAL")){
+                for(RobotInfo ally : alliesNear){
+                    if(ally.health < 151){
+                        if(rc.canHeal(ally.location)){
+                            rc.heal(ally.location);
+                        }
+                    }
+                }
+            }
+
+            if(duckSkill.name().equals("ATTACK")) {
+                for (RobotInfo opp : opponentsNear) {
+                    if (opp.health < 151) {
+                        if (rc.canAttack(opp.location)) {
+                            rc.attack(opp.location);
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+
     }
+
 
     Direction getNextDirection(){
         return Lib.directions[rng.nextInt(8)];
