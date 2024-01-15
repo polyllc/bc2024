@@ -99,6 +99,18 @@ public class Duck {
                 }
             }
 
+            // assigns skillTypes
+            if(duckSkill.name().equals(null)){
+              if(rc.readSharedArray(23) % 2 == 0) {
+                  duckSkill = SkillType.HEAL;
+                  rc.writeSharedArray(23, 1);
+              }
+              else {
+                  duckSkill = SkillType.ATTACK;
+                  rc.writeSharedArray(23, 0);
+              }
+            }
+
             if(rc.getRoundNum() == 2){
                 lib.setAllySpawnZones(rc.getLocation());
             }
@@ -428,6 +440,7 @@ public class Duck {
                         heal();
                     }
                 }
+                attack();
             }
             else if(duckSkill.name().equals("ATTACK")) {
                 for (RobotInfo opp : opponentsNear) {
@@ -435,6 +448,7 @@ public class Duck {
                         attack();
                     }
                 }
+                heal();
             }
             else { // ducks that are BUILD or none will choose based on # of ducks nearby
                 if(alliesNear.length < opponentsNear.length){
