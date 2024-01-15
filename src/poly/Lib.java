@@ -787,7 +787,7 @@ public class Lib {
     }
 
     public int nextPointToSpawn() throws GameActionException {
-        rc.writeSharedArray(23, (rc.readSharedArray(23) + 1) % 3);
-        return rc.readSharedArray(23);
+        rc.writeSharedArray(24, (rc.readSharedArray(24) + 1) % 3);
+        return rc.readSharedArray(24);
     }
 }
