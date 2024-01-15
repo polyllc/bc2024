@@ -1,6 +1,7 @@
 package poly;
 
 import battlecode.common.*;
+import battlecode.world.Flag;
 
 
 import java.util.Arrays;
@@ -46,6 +47,10 @@ public class Duck {
         rc = robot;
         nav = new Navigation(rc);
         lib = new Lib(rc);
+
+
+
+
     }
 
     public void takeTurn() throws GameActionException{
@@ -55,6 +60,9 @@ public class Duck {
             MapLocation randomLoc = lib.spawnLocations[rng.nextInt(lib.spawnLocations.length)];
          //   System.out.println(Arrays.toString(lib.spawnLocations));
             // for now this is random, but in the future, we spawn where it is most needed
+
+
+
             for(MapLocation loc : lib.spawnLocations) {
                 for (Direction dir : Lib.directions) {
                     if (rc.canSpawn(loc.add(dir))) {
@@ -64,6 +72,13 @@ public class Duck {
                         job = Jobs.IDLING;
                         break;
                     }
+                }
+            }
+
+            // assigns a duck to stay on the flag
+            if((rc.senseNearbyFlags(GameConstants.VISION_RADIUS_SQUARED, rc.getTeam())).length > 0) {
+                if(rc.getLocation().equals(lib.getNearestFlags(rc.getLocation()))) {
+                    job = Jobs.GUARDINGFLAG;
                 }
             }
         }
@@ -196,17 +211,15 @@ public class Duck {
 
             if(job == Jobs.GUARDINGFLAG){
                 // for the ducks that are guarding our flags (possibly on the flag itself)
-                // if enemy within radii then anncounce that there's enemies
-                // ASSUMES THAT THERES A DUCK ON THE FLAG
+                // if enemy within radii then announce that there's enemies
+                // ASSUMES THAT THERE'S A DUCK ON THE FLAG
                 // turn other ducks to defense??????????
                 RobotInfo[] enemyRobots = enemiesInRadius();
                 if(enemyRobots.length > 0) {
                     if (rc.canWriteSharedArray(8, 1)) {
-
                         rc.writeSharedArray(8, 1);
                         rc.writeSharedArray(9, rc.getLocation().x);
                         rc.writeSharedArray(10, rc.getLocation().y);
-
                     }
                 }
                 else{
