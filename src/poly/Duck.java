@@ -263,10 +263,14 @@ public class Duck {
                         }
                     }
                 }
+                else {
+                    job = Jobs.IDLING;
+                    locationGoing = Lib.noLoc;
+                }
 
             }
 
-           rc.setIndicatorString("loc: " + locationGoing + " , Job: " + job + " dir: " + directionGoing + " gn: " + groupNumber);
+           rc.setIndicatorString("loc: " + locationGoing + " , Job: " + job + " gn: " + groupNumber + " near: " + lib.getNearestFlagCarrier());
 
             if(turnsMovingInDirection > (rc.getMapHeight() + rc.getMapWidth())){
                 switch(rng.nextInt(3)-1){
@@ -291,19 +295,31 @@ public class Duck {
                         if (holder != null) {
                             if (holder.getTeam() == rc.getTeam()) {
                                 if (!holder.hasFlag) {
-                                    lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                                    if(guardTime > 20) {
+                                        lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                                        guardTime = 0;
+                                    }
                                     flagHolder = Lib.noLoc;
                                 }
                             } else {
-                                lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                                if(guardTime > 20) {
+                                    lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                                    guardTime = 0;
+                                }
                                 flagHolder = Lib.noLoc;
                             }
                         } else {
-                            lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                            if(guardTime > 20) {
+                                lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                                guardTime = 0;
+                            }
                             flagHolder = Lib.noLoc;
                         }
                     } else {
-                        lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                        if(guardTime > 20) {
+                            lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
+                            guardTime = 0;
+                        }
                         flagHolder = Lib.noLoc;
                     }
                 }
@@ -317,7 +333,7 @@ public class Duck {
 
                 if(!flagHolder.equals(Lib.noFlag) && !flagHolder.equals(Lib.noLoc)){
                     locationGoing = flagHolder;
-                    //guardTime++;
+                    guardTime++;
                 }
                 else {
                     locationGoing = Lib.noLoc;
@@ -372,7 +388,7 @@ public class Duck {
 
             senseFlags();
 
-           // if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(11);
+            if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(23);
 
            // rc.setIndicatorString(Arrays.toString(rc.senseNearbyFlags(-1, rc.getTeam().opponent())));
         }
