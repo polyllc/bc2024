@@ -26,6 +26,10 @@ public class Duck {
 
     boolean stopMoving = false;
 
+    int groupNumber = 0;
+
+    int spawnRound = 0;
+
     int flagCarrierIndex = 0;
 
     enum Jobs {
@@ -76,6 +80,7 @@ public class Duck {
                         spawnLocation = loc.add(dir);
                         directionGoing = loc.add(dir).directionTo(lib.mapCenter()); //spawn towards flags
                         job = Jobs.IDLING;
+                        spawnRound = rc.getRoundNum();
                         break;
                     }
                 }
