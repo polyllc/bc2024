@@ -370,7 +370,7 @@ public class Duck {
                     job = Jobs.IDLING;
                     locationGoing = Lib.noLoc;
                 }
-
+                placeTraps();
             }
 
            rc.setIndicatorString("loc: " + locationGoing + " , Job: " + job + " gn: " + groupNumber + " near: " + lib.getNearestFlagCarrier());
@@ -403,28 +403,28 @@ public class Duck {
                         if (holder != null) {
                             if (holder.getTeam() == rc.getTeam()) {
                                 if (!holder.hasFlag) {
-                                    if(guardTime > 20) {
+                                    if(guardTime > 5) {
                                         lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                                         guardTime = 0;
                                     }
                                     flagHolder = Lib.noLoc;
                                 }
                             } else {
-                                if(guardTime > 20) {
+                                if(guardTime > 5) {
                                     lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                                     guardTime = 0;
                                 }
                                 flagHolder = Lib.noLoc;
                             }
                         } else {
-                            if(guardTime > 20) {
+                            if(guardTime > 5) {
                                 lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                                 guardTime = 0;
                             }
                             flagHolder = Lib.noLoc;
                         }
                     } else {
-                        if(guardTime > 20) {
+                        if(guardTime > 5) {
                             lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                             guardTime = 0;
                         }
@@ -654,6 +654,14 @@ public class Duck {
                     }
             }
         }
+        if(job == Jobs.GUARDINGFLAG){
+            for(Direction dir : Lib.directions){
+                if(rc.canBuild(TrapType.STUN, rc.getLocation().add(dir))){
+                    rc.build(TrapType.STUN, rc.getLocation().add(dir));
+                }
+            }
+        }
+
     }
 
 

@@ -1,8 +1,13 @@
 # todo
-- (J) make the ducks decide whether they should heal nearby ducks or attack enemy ducks (use a best option algorithm if you will)
-- (M) place down traps!
-  - (M) on our flags (maybe when a certain round hits?)
-- (L) explore more, don't go to the dam immediately
+- add the possibility that the enemy flag could move
+- (L) brute force way through many ducks 
+- (M) if an idling duck sees a flag being taken, alert!
+- (J) place traps on enemy spawn points
+- (M) make more ducks defend!
+- (M) make one group defend at all times
+- (M) go through water please
+- (M) defend flags that are moving
+- (M) if there are enemy ducks nearby, spawn near them
 
 # potentially
 - (L) change the navigation code to also implement the fact that it would take less time to dig over water than go around 
