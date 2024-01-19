@@ -134,6 +134,35 @@ public class Duck {
                 //we don't want it to not do anything, but most likely that won't happen for now
             }
 
+            // drop traps around enemy spawn points
+                /*if(job == Jobs.IDLING || job == Jobs.GUARDINGFLAGHOLDER){
+                for(MapLocation loc : lib.enemySpawnZones()){
+                    for(Direction dir: Lib.directions){
+                        if(rc.getLocation() == loc.add(dir).add(dir).add(dir)){
+                            if(rc.canBuild(TrapType.STUN, loc.add(dir).add(dir).add(dir))) {
+                                rc.build(TrapType.STUN, loc.add(dir).add(dir).add(dir));
+                            }
+                        }
+                    }
+
+                }
+            } */
+
+            if(job == Jobs.IDLING || job == Jobs.GUARDINGFLAGHOLDER){
+                for(MapLocation loc1 : lib.enemySpawnZones()){
+                    for(MapInfo loc : rc.senseNearbyMapInfos()){
+                        if(!loc.isDam() && !loc.isWater() && !loc.isWall()) {
+                            if(loc1 == loc.getMapLocation()) {
+                                if (rc.canBuild(TrapType.STUN, loc.getMapLocation())) {
+                                    rc.build(TrapType.STUN, loc.getMapLocation());
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+
             if(job == Jobs.IDLING) {
 
 
