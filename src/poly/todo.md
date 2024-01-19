@@ -7,10 +7,11 @@
 - (M) make one group defend at all times
 - (M) defend flags that are moving
 - (M) if there are enemy ducks nearby, spawn near them
+- (M) heal ducks with the highest xp
 
 # potentially
 - (L) change the navigation code to also implement the fact that it would take less time to dig over water than go around 
-
+- (L) make it better to navigate through water
 If you want to do one of these, mark the first letter of your name
 next to the one that you want to do, and then delete and commit once 
 you are done. pretty please make a new branch for a big new change so i 

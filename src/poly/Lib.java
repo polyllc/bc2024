@@ -797,17 +797,26 @@ public class Lib {
         if(!rc.canMove(Direction.NORTH) && rc.canSenseLocation(rc.getLocation().add(Direction.NORTH)) && !rc.senseMapInfo(rc.getLocation().add(Direction.NORTH)).isWater()){
             return 0;
         }
-        else if(!rc.canMove(Direction.WEST) && rc.canSenseLocation(rc.getLocation().add(Direction.NORTH)) && !rc.senseMapInfo(rc.getLocation().add(Direction.NORTH)).isWater()){
+        else if(!rc.canMove(Direction.WEST) && rc.canSenseLocation(rc.getLocation().add(Direction.WEST)) && !rc.senseMapInfo(rc.getLocation().add(Direction.WEST)).isWater()){
             return 1;
         }
-        else if(!rc.canMove(Direction.EAST) && rc.canSenseLocation(rc.getLocation().add(Direction.NORTH)) && !rc.senseMapInfo(rc.getLocation().add(Direction.NORTH)).isWater()){
+        else if(!rc.canMove(Direction.EAST) && rc.canSenseLocation(rc.getLocation().add(Direction.EAST)) && !rc.senseMapInfo(rc.getLocation().add(Direction.EAST)).isWater()){
             return 2;
         }
-        else if(!rc.canMove(Direction.SOUTH) && rc.canSenseLocation(rc.getLocation().add(Direction.NORTH)) && !rc.senseMapInfo(rc.getLocation().add(Direction.NORTH)).isWater()){
+        else if(!rc.canMove(Direction.SOUTH) && rc.canSenseLocation(rc.getLocation().add(Direction.SOUTH)) && !rc.senseMapInfo(rc.getLocation().add(Direction.SOUTH)).isWater()){
             return 3;
         }
         else {
             return -1;
         }
+    }
+
+    public RobotInfo enemyHasFlag(RobotInfo[] enemyRobots) {
+        for(RobotInfo robot : enemyRobots){
+            if(robot.hasFlag){
+                return robot;
+            }
+        }
+        return null;
     }
 }
