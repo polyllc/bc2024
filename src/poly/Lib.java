@@ -819,4 +819,14 @@ public class Lib {
         }
         return null;
     }
+
+    public RobotInfo[] sortByXP(RobotInfo[] robotInfos) {
+        for(RobotInfo r : robotInfos){
+            if(r.getAttackLevel()*r.getAttackLevel() + r.getHealLevel()*r.getHealLevel() + r.getBuildLevel() * r.getBuildLevel()
+            > robotInfos[0].getAttackLevel() * robotInfos[0].getAttackLevel() + robotInfos[0].getHealLevel() * robotInfos[0].getHealLevel() + robotInfos[0].getBuildLevel() * robotInfos[0].getBuildLevel()){
+                robotInfos[0] = r;
+            }
+        }
+        return robotInfos;
+    }
 }

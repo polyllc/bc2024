@@ -16,6 +16,7 @@ public class Duck {
     Navigation nav;
     Direction directionGoing = Direction.CENTER; //center is essentially our null for directions, but it is actually a direction
     MapLocation locationGoing = Lib.noLoc;
+    MapLocation lastLocationGoing = Lib.noLoc;
 
     MapLocation spawnLocation = Lib.noLoc;
     MapLocation crumbPlace = Lib.noLoc;
@@ -102,6 +103,9 @@ public class Duck {
             if(rc.canBuyGlobal(GlobalUpgrade.ACTION)){
                 rc.buyGlobal(GlobalUpgrade.ACTION);
             }
+            if(rc.canBuyGlobal(GlobalUpgrade.CAPTURING)){
+                rc.buyGlobal(GlobalUpgrade.CAPTURING);
+            }
 
             // assigns a duck to stay on the flag
             FlagInfo[] flagInfos = rc.senseNearbyFlags(-1, rc.getTeam());
@@ -148,20 +152,6 @@ public class Duck {
                 }
             } */
 
-            if(job == Jobs.IDLING || job == Jobs.GUARDINGFLAGHOLDER){
-                for(MapLocation loc1 : lib.enemySpawnZones()){
-                    for(MapInfo loc : rc.senseNearbyMapInfos()){
-                        if(!loc.isDam() && !loc.isWater() && !loc.isWall()) {
-                            if(loc1 == loc.getMapLocation()) {
-                                if (rc.canBuild(TrapType.STUN, loc.getMapLocation())) {
-                                    rc.build(TrapType.STUN, loc.getMapLocation());
-                                }
-                            }
-                        }
-
-                    }
-                }
-            }
 
             if(job == Jobs.IDLING) {
 
@@ -253,7 +243,7 @@ public class Duck {
                     job = Jobs.RETRIEVINGFLAG;
                 }
 
-                placeTraps();
+
             }
 
             fill();
@@ -276,7 +266,7 @@ public class Duck {
                             job = Jobs.IDLING;
                         }
                     }
-                    placeTraps();
+
                 }
 
                 if (lib.surroundedByWater(crumbPlace)) {
@@ -303,6 +293,7 @@ public class Duck {
             }
 
             if(job == Jobs.GETTINGFLAG){
+                //todo, a lot of ducks stuck on this, maybe also work on not assigning too many ducks on this?
 
                 lib.setEnemyFlagLoc(rc.getLocation(), flagCarrierIndex);
 
@@ -400,7 +391,7 @@ public class Duck {
                     job = Jobs.IDLING;
                     locationGoing = Lib.noLoc;
                 }
-                placeTraps();
+
             }
 
            rc.setIndicatorString("loc: " + locationGoing + " , Job: " + job + " gn: " + groupNumber + " near: " + lib.getNearestFlagCarrier() + directionGoing);
@@ -510,6 +501,7 @@ public class Duck {
                         locationGoing = new MapLocation(rc.readSharedArray(9), rc.readSharedArray(10));
                     }
                 }
+
             }
 
             if(job == Jobs.DEFENDINGFLAG){
@@ -527,7 +519,7 @@ public class Duck {
                 }
 
                 if(rc.canSenseLocation(locationGoing)){
-                    if(!rc.canSenseRobotAtLocation(locationGoing) || !rc.senseRobotAtLocation(locationGoing).hasFlag){
+                    if(!rc.canSenseRobotAtLocation(locationGoing) && !rc.senseRobotAtLocation(locationGoing).hasFlag){
                         job = Jobs.IDLING;
                         directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                         locationGoing = Lib.noLoc;
@@ -547,7 +539,7 @@ public class Duck {
                 }
             }
 
-
+            placeTraps();
             healOrAttack();
             lib.enemySpawnPoints(rc.getLocation());
 
@@ -607,6 +599,7 @@ public class Duck {
                     }
                 }
                 lastMovement = nav.goTo(locationGoing, true); //if we need to save bytecode, well this is where we're saving it
+                lastLocationGoing = locationGoing;
                 if (!lastMovement) {
                     //lastMovement = nav.bugNavTo(locationGoing);
                     if (!lastMovement) {
@@ -646,6 +639,7 @@ public class Duck {
 
     void heal() throws GameActionException{
         RobotInfo[] robotInfos = rc.senseNearbyRobots(-1, rc.getTeam());
+        robotInfos = lib.sortByXP(robotInfos);
         if(robotInfos.length > 0){
             if(rc.canHeal(robotInfos[0].getLocation())){
                 rc.heal(robotInfos[0].getLocation());
@@ -704,6 +698,30 @@ public class Duck {
     }
 
     void placeTraps() throws GameActionException {
+        if(job == Jobs.IDLING || job == Jobs.GUARDINGFLAGHOLDER){
+            for(MapLocation loc1 : lib.enemySpawnZones()) {
+                for (MapInfo loc : rc.senseNearbyMapInfos()) {
+                    if (!loc.isWater() && !loc.isWall()) {
+                        if (loc1.distanceSquaredTo(rc.getLocation()) < 10) {
+                            if (rc.canBuild(TrapType.STUN, loc.getMapLocation())) {
+                                rc.build(TrapType.STUN, loc.getMapLocation());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if(job == Jobs.GUARDINGFLAGHOLDER){
+            RobotInfo robotInfo = rc.senseRobotAtLocation(rc.getLocation().add(rc.getLocation().directionTo(lastLocationGoing)));
+            if(robotInfo == null){
+                for(Direction dir : Lib.directions){
+                    if(rc.canBuild(TrapType.STUN, rc.getLocation().add(dir))){
+                        rc.build(TrapType.STUN, rc.getLocation().add(dir));
+                    }
+                }
+            }
+        }
+
         if(rc.getRoundNum() < 200) {
             if (lib.isNearDam(rc.getLocation())) {
                     if (rc.canBuild(TrapType.EXPLOSIVE, rc.getLocation())){
@@ -711,6 +729,7 @@ public class Duck {
                     }
             }
         }
+
         if(job == Jobs.GUARDINGFLAG){
             for(Direction dir : Lib.directions){
                 if(rc.canBuild(TrapType.STUN, rc.getLocation().add(dir))){
