@@ -1,0 +1,3 @@
+- split up ducks into groups of the amount of flags that there are on the map
+- when the ducks spawn, assign them a group number related to their first spawn zone place
+- once round hits a certain point, or if more than one flag is captured (and the enemy team has less flags captured), build traps around the flags in order to make sure the enemy doesn't get them
