@@ -5,7 +5,6 @@
 - (J) place traps on enemy spawn points
 - (M) make more ducks defend!
 - (M) make one group defend at all times
-- (M) go through water please
 - (M) defend flags that are moving
 - (M) if there are enemy ducks nearby, spawn near them
 

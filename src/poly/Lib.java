@@ -793,17 +793,17 @@ public class Lib {
 
     //Using the rc, returns a 0,1,2,3 if they are up, left, right, and down respectively depending on what border they are on
     // If they are on multiple, returns the first one in the above order. If on none, returns -1
-    public int borderDetection(){
-        if(!rc.canMove(Direction.NORTH)){
+    public int borderDetection() throws GameActionException {
+        if(!rc.canMove(Direction.NORTH) && rc.canSenseLocation(rc.getLocation().add(Direction.NORTH)) && !rc.senseMapInfo(rc.getLocation().add(Direction.NORTH)).isWater()){
             return 0;
         }
-        else if(!rc.canMove(Direction.WEST)){
+        else if(!rc.canMove(Direction.WEST) && rc.canSenseLocation(rc.getLocation().add(Direction.NORTH)) && !rc.senseMapInfo(rc.getLocation().add(Direction.NORTH)).isWater()){
             return 1;
         }
-        else if(!rc.canMove(Direction.EAST)){
+        else if(!rc.canMove(Direction.EAST) && rc.canSenseLocation(rc.getLocation().add(Direction.NORTH)) && !rc.senseMapInfo(rc.getLocation().add(Direction.NORTH)).isWater()){
             return 2;
         }
-        else if(!rc.canMove(Direction.SOUTH)){
+        else if(!rc.canMove(Direction.SOUTH) && rc.canSenseLocation(rc.getLocation().add(Direction.NORTH)) && !rc.senseMapInfo(rc.getLocation().add(Direction.NORTH)).isWater()){
             return 3;
         }
         else {

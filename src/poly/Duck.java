@@ -40,9 +40,9 @@ public class Duck {
         GETTINGCRUMBS,
         IDLING,
         FINDINGFLAG,
-        GUARDINGFLAGHOLDER,
-        GUARDINGFLAG,
-        DEFENDINGFLAG
+        GUARDINGFLAGHOLDER, //guarding a flag holder that holds an enemy flag
+        GUARDINGFLAG, //the duck that sits at our flag all game
+        DEFENDINGFLAG //defending our flag at base
     }
 
     Jobs job;
@@ -595,7 +595,7 @@ public class Duck {
 
     void fill() throws GameActionException {
         if(rc.canFill(rc.getLocation().add(rc.getLocation().directionTo(locationGoing)))){
-            if(rc.getCrumbs() > 500){
+            if(rc.getCrumbs() > 0){
                 rc.fill(rc.getLocation().add(rc.getLocation().directionTo(locationGoing)));
             }
         }
@@ -716,18 +716,30 @@ public class Duck {
                     if (holder != null) {
                         if (holder.getTeam() == rc.getTeam()) {
                             if (!holder.hasFlag) {
+                                if(flagCarrierIndex == 0){
+                                    flagCarrierIndex = lib.getFlagIndex(flag);
+                                }
                                 lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                                 flag = Lib.noLoc;
                             }
                         } else {
+                            if(flagCarrierIndex == 0){
+                                flagCarrierIndex = lib.getFlagIndex(flag);
+                            }
                             lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                             flag = Lib.noLoc;
                         }
                     } else {
+                        if(flagCarrierIndex == 0){
+                            flagCarrierIndex = lib.getFlagIndex(flag);
+                        }
                         lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                         flag = Lib.noLoc;
                     }
                 } else {
+                    if(flagCarrierIndex == 0){
+                        flagCarrierIndex = lib.getFlagIndex(flag);
+                    }
                     lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                     flag = Lib.noLoc;
                 }
