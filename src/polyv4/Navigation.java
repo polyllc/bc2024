@@ -1,4 +1,4 @@
-package poly;
+package polyv4;
 
 import battlecode.common.*;
 
@@ -108,7 +108,7 @@ public class Navigation {
                 // this means that we should turn right if, when facing the center, the destination is on the right
             }
             if (avoidBugNav) {
-               // System.out.println("avoidBugNav: " + success);
+                System.out.println("avoidBugNav: " + success);
                 return success;
             }
             else {
@@ -116,7 +116,7 @@ public class Navigation {
             }
         }
         else {
-         //   System.out.println("Trying to go to " + destination);
+            System.out.println("Trying to go to " + destination);
             MapLocation myLoc = rc.getLocation();
             double x = destination.x - myLoc.x;
             double y = destination.y - myLoc.y;
@@ -124,7 +124,7 @@ public class Navigation {
             Direction dir = myLoc.directionTo(destination);
             double dirAngle = Math.atan2(dir.dy, dir.dx);
             double difference = (actualAngle - dirAngle + 2 * Math.PI) % (2 * Math.PI);
-         //   System.out.println(difference);
+            System.out.println(difference);
             if (difference < Math.PI)
                 return goTo(dir, true);
             else
@@ -143,7 +143,7 @@ public class Navigation {
         boolean noWalls = true;
         MapLocation currentLoc = rc.getLocation();
         for (Direction dir : Lib.directions)
-            if (!(rc.canMove(dir)) && !rc.senseMapInfo(currentLoc).isWater() ) //|| rc.senseFlooding(currentLoc.add(dir))) maybe we change this to whatever those cloud things do
+            if (!(rc.canMove(dir)) ) //|| rc.senseFlooding(currentLoc.add(dir))) maybe we change this to whatever those cloud things do
                 noWalls = false;
         if (noWalls) {
             useBugNav = false;
@@ -205,7 +205,7 @@ public class Navigation {
                 }
                 else {
                     MapInfo mapInfo = rc.senseMapInfo(loc);
-                    valid = mapInfo.isPassable() && !mapInfo.isWater();
+                    valid = mapInfo.isPassable();
                 }
                 // boolean valid = rc.canSenseLocation(loc) && !rc.isLocationOccupied(loc) && rc.senseMapInfo(loc).getCurrentDirection() == Direction.CENTER;
                 validLocs[x][y] = valid;

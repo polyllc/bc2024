@@ -1,4 +1,4 @@
-package poly;
+package polyv4;
 
 import battlecode.common.*;
 
@@ -357,10 +357,6 @@ public class Lib {
         }
     }
 
-    public void printFlags() throws GameActionException {
-        System.out.println(Arrays.toString(Arrays.stream(new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)}).toArray()));
-    }
-
     public MapLocation getNearestFlagCarrier() throws GameActionException {
         MapLocation[] flags = new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)};
         if(flags[0].equals(new MapLocation(-1, -1))){
@@ -397,7 +393,7 @@ public class Lib {
     }
 
     public int getNextClearFlagIndex() throws GameActionException {
-       // MapLocation[] flags = new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)};
+        MapLocation[] flags = new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)};
         //System.out.println(Arrays.toString(flags));
         if(getEnemyFlagLoc(1).equals(noLoc) || getEnemyFlagLoc(1).equals(new MapLocation(-1,-1))) {
             return 1;
@@ -406,22 +402,6 @@ public class Lib {
         } else if(getEnemyFlagLoc(3).equals(noLoc)|| getEnemyFlagLoc(3).equals(new MapLocation(-1,-1))){
             return 3;
         } else if(getEnemyFlagLoc(4).equals(noLoc) || getEnemyFlagLoc(4).equals(new MapLocation(-1,-1))) {
-            return 4;
-        } else {
-            return 0;
-        }
-    }
-
-    public int getNextClearFlagIndex(MapLocation loc) throws GameActionException {
-     //   MapLocation[] flags = new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)};
-        //System.out.println(Arrays.toString(flags));
-        if(getEnemyFlagLoc(1).equals(noLoc) || getEnemyFlagLoc(1).equals(loc) || getEnemyFlagLoc(1).equals(new MapLocation(-1,-1))) {
-            return 1;
-        } else if(getEnemyFlagLoc(2).equals(noLoc) || getEnemyFlagLoc(2).equals(loc) || getEnemyFlagLoc(2).equals(new MapLocation(-1,-1))){
-            return 2;
-        } else if(getEnemyFlagLoc(3).equals(noLoc)|| getEnemyFlagLoc(3).equals(loc) ||getEnemyFlagLoc(3).equals(new MapLocation(-1,-1))){
-            return 3;
-        } else if(getEnemyFlagLoc(4).equals(noLoc) || getEnemyFlagLoc(4).equals(loc) || getEnemyFlagLoc(4).equals(new MapLocation(-1,-1))) {
             return 4;
         } else {
             return 0;
@@ -794,7 +774,7 @@ public class Lib {
         if(rc.getLocation().distanceSquaredTo(allys[2]) < 10){
             return 3;
         }
-        return (int) (Math.floor(Math.random()*3)+1);
+        return 0;
     }
 
     public MapLocation getEnemyWithFlagNearby(RobotInfo[] robots) throws GameActionException {
@@ -813,40 +793,21 @@ public class Lib {
 
     //Using the rc, returns a 0,1,2,3 if they are up, left, right, and down respectively depending on what border they are on
     // If they are on multiple, returns the first one in the above order. If on none, returns -1
-    public int borderDetection() throws GameActionException {
-        if(!rc.canMove(Direction.NORTH) && rc.canSenseLocation(rc.getLocation().add(Direction.NORTH)) && !rc.senseMapInfo(rc.getLocation().add(Direction.NORTH)).isWater()){
+    public int borderDetection(){
+        if(! rc.canMove(Direction.NORTH)){
             return 0;
         }
-        else if(!rc.canMove(Direction.WEST) && rc.canSenseLocation(rc.getLocation().add(Direction.WEST)) && !rc.senseMapInfo(rc.getLocation().add(Direction.WEST)).isWater()){
+        else if(! rc.canMove(Direction.WEST)){
             return 1;
         }
-        else if(!rc.canMove(Direction.EAST) && rc.canSenseLocation(rc.getLocation().add(Direction.EAST)) && !rc.senseMapInfo(rc.getLocation().add(Direction.EAST)).isWater()){
+        else if(! rc.canMove(Direction.EAST)){
             return 2;
         }
-        else if(!rc.canMove(Direction.SOUTH) && rc.canSenseLocation(rc.getLocation().add(Direction.SOUTH)) && !rc.senseMapInfo(rc.getLocation().add(Direction.SOUTH)).isWater()){
+        else if(! rc.canMove(Direction.SOUTH)){
             return 3;
         }
         else {
             return -1;
         }
-    }
-
-    public RobotInfo enemyHasFlag(RobotInfo[] enemyRobots) {
-        for(RobotInfo robot : enemyRobots){
-            if(robot.hasFlag){
-                return robot;
-            }
-        }
-        return null;
-    }
-
-    public RobotInfo[] sortByXP(RobotInfo[] robotInfos) {
-        for(RobotInfo r : robotInfos){
-            if(r.getAttackLevel()*r.getAttackLevel() + r.getHealLevel()*r.getHealLevel() + r.getBuildLevel() * r.getBuildLevel()
-            > robotInfos[0].getAttackLevel() * robotInfos[0].getAttackLevel() + robotInfos[0].getHealLevel() * robotInfos[0].getHealLevel() + robotInfos[0].getBuildLevel() * robotInfos[0].getBuildLevel()){
-                robotInfos[0] = r;
-            }
-        }
-        return robotInfos;
     }
 }

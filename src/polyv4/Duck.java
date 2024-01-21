@@ -1,4 +1,4 @@
-package poly;
+package polyv4;
 
 import battlecode.common.*;
 import battlecode.world.Flag;
@@ -16,7 +16,6 @@ public class Duck {
     Navigation nav;
     Direction directionGoing = Direction.CENTER; //center is essentially our null for directions, but it is actually a direction
     MapLocation locationGoing = Lib.noLoc;
-    MapLocation lastLocationGoing = Lib.noLoc;
 
     MapLocation spawnLocation = Lib.noLoc;
     MapLocation crumbPlace = Lib.noLoc;
@@ -41,9 +40,9 @@ public class Duck {
         GETTINGCRUMBS,
         IDLING,
         FINDINGFLAG,
-        GUARDINGFLAGHOLDER, //guarding a flag holder that holds an enemy flag
-        GUARDINGFLAG, //the duck that sits at our flag all game
-        DEFENDINGFLAG //defending our flag at base
+        GUARDINGFLAGHOLDER,
+        GUARDINGFLAG,
+        DEFENDINGFLAG
     }
 
     Jobs job;
@@ -97,15 +96,11 @@ public class Duck {
                 groupNumber = lib.getGroupNumber();
             }
 
-
-            if(rc.canBuyGlobal(GlobalUpgrade.ACTION)){
-                rc.buyGlobal(GlobalUpgrade.ACTION);
-            }
             if(rc.canBuyGlobal(GlobalUpgrade.HEALING)){
                 rc.buyGlobal(GlobalUpgrade.HEALING);
             }
-            if(rc.canBuyGlobal(GlobalUpgrade.CAPTURING)){
-                rc.buyGlobal(GlobalUpgrade.CAPTURING);
+            if(rc.canBuyGlobal(GlobalUpgrade.ACTION)){
+                rc.buyGlobal(GlobalUpgrade.ACTION);
             }
 
             // assigns a duck to stay on the flag
@@ -139,27 +134,11 @@ public class Duck {
                 //we don't want it to not do anything, but most likely that won't happen for now
             }
 
-            // drop traps around enemy spawn points
-                /*if(job == Jobs.IDLING || job == Jobs.GUARDINGFLAGHOLDER){
-                for(MapLocation loc : lib.enemySpawnZones()){
-                    for(Direction dir: Lib.directions){
-                        if(rc.getLocation() == loc.add(dir).add(dir).add(dir)){
-                            if(rc.canBuild(TrapType.STUN, loc.add(dir).add(dir).add(dir))) {
-                                rc.build(TrapType.STUN, loc.add(dir).add(dir).add(dir));
-                            }
-                        }
-                    }
-
-                }
-            } */
-
-
             if(job == Jobs.IDLING) {
 
-//fix pathfindinb
-                //bad exploration
+
                 locationGoing = Lib.noLoc;
-                MapLocation[] crumbs = rc.senseNearbyCrumbs(-1);
+                MapLocation[] crumbs = rc.senseNearbyCrumbs(20);
                 if (crumbs.length > 0) {
                     crumbPlace = crumbs[0];
                     locationGoing = crumbs[0];
@@ -245,10 +224,10 @@ public class Duck {
                     job = Jobs.RETRIEVINGFLAG;
                 }
 
-
+                placeTraps();
             }
 
-            fill();
+
 
             if(job == Jobs.GETTINGCRUMBS) {
                 if(rc.getRoundNum() > 200){
@@ -260,7 +239,7 @@ public class Duck {
                             crumbPlace = Lib.noLoc;
                             locationGoing = Lib.noLoc;
                             if(rc.getRoundNum() > 200) {
-                                directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
+                                directionGoing = directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                             }
                             else {
                                 directionGoing = rc.getLocation().directionTo(lib.mapCenter());
@@ -268,17 +247,16 @@ public class Duck {
                             job = Jobs.IDLING;
                         }
                     }
-
                 }
 
                 if (lib.surroundedByWater(crumbPlace)) {
                     if (rc.getCrumbs() > 10) {
-                       // if (rc.getLocation().distanceSquaredTo(crumbPlace) < 6) {
+                        if (rc.getLocation().distanceSquaredTo(crumbPlace) < 6) {
                             MapLocation ahead = rc.getLocation().add(rc.getLocation().directionTo(crumbPlace));
                             if (rc.canFill(ahead)) {
                                 rc.fill(ahead);
                             }
-                       // }
+                        }
                     }
                 }
 
@@ -295,11 +273,7 @@ public class Duck {
             }
 
             if(job == Jobs.GETTINGFLAG){
-                //todo, a lot of ducks stuck on this, maybe also work on not assigning too many ducks on this?
 
-                if(flagCarrierIndex == 0){
-                    flagCarrierIndex = lib.getNextClearFlagIndex(locationGoing);
-                }
                 lib.setEnemyFlagLoc(rc.getLocation(), flagCarrierIndex);
 
                 if(rc.getLocation().distanceSquaredTo(locationGoing) <= 2){
@@ -335,22 +309,10 @@ public class Duck {
                         lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                         flagCarrierIndex = 0;
                     }
-                    else {
-                        RobotInfo flagBot = rc.senseRobotAtLocation(lib.getNearestFlags(rc.getLocation())[0].getLocation());
-                        if(flagBot != null) {
-                            if(flagBot.getTeam() == rc.getTeam()){
-                                job = Jobs.IDLING;
-                                locationGoing = Lib.noLoc;
-                                directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
-                                lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
-                                flagCarrierIndex = 0;
-                            }
-                        }
-                    }
                 }
             }
 
-            if(job == Jobs.RETRIEVINGFLAG){ //todo, no one is listening to this ducks
+            if(job == Jobs.RETRIEVINGFLAG){
                 if(flagCarrierIndex == 0){
                     flagCarrierIndex = lib.getNextClearFlagIndex();
                 }
@@ -408,10 +370,10 @@ public class Duck {
                     job = Jobs.IDLING;
                     locationGoing = Lib.noLoc;
                 }
-
+                placeTraps();
             }
 
-           rc.setIndicatorString("loc: " + locationGoing + " , Job: " + job + " gn: " + groupNumber + " near: " + lib.getNearestFlagCarrier() + directionGoing);
+           rc.setIndicatorString("loc: " + locationGoing + " , Job: " + job + " gn: " + groupNumber + " near: " + lib.getNearestFlagCarrier());
 
             if(turnsMovingInDirection > (rc.getMapHeight() + rc.getMapWidth())){
                 switch(rng.nextInt(3)-1){
@@ -498,48 +460,17 @@ public class Duck {
             }
 
             if(job == Jobs.IDLING || job == Jobs.GUARDINGFLAGHOLDER || job == Jobs.GETTINGCRUMBS) {
-
-                RobotInfo[] enemyRobots = lib.enemiesInRadius();
-                RobotInfo robotInfo = lib.enemyHasFlag(enemyRobots);
-                if(enemyRobots.length > 0 && robotInfo != null) {
-                    if (rc.canWriteSharedArray(8, 1)) {
-                        rc.writeSharedArray(8, 1);
-                        rc.writeSharedArray(9, robotInfo.getLocation().x);
-                        rc.writeSharedArray(10, robotInfo.getLocation().y);
-                    }
-                }
-                else if(lib.getAllyAttacked().distanceSquaredTo(rc.getLocation()) < 5){
-                    rc.writeSharedArray(8, 0);
-                }
-
                 if(rc.readSharedArray(8) == 1){
                     if(groupNumber == 1){
                         job = Jobs.DEFENDINGFLAG;
                         locationGoing = new MapLocation(rc.readSharedArray(9), rc.readSharedArray(10));
                     }
                 }
-
             }
 
             if(job == Jobs.DEFENDINGFLAG){
-
-                if(rc.readSharedArray(8) == 0){
-                    job = Jobs.IDLING;
-                    directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
-                    locationGoing = Lib.noLoc;
-                }
-                if(rc.readSharedArray(8) == 1){
-                    if(groupNumber == 1 || groupNumber == 2){
-                        job = Jobs.DEFENDINGFLAG;
-                        locationGoing = new MapLocation(rc.readSharedArray(9), rc.readSharedArray(10));
-                    }
-                }
-
                 if(flagInfos.length > 0){
-                    if(rc.getRoundNum() < 400) {
-                        //System.out.println("flag is nearby: " + flagInfos[0].isPickedUp());
-                    }
-                    //if(flagInfos[0].getTeam() == rc.getTeam()){
+                    if(flagInfos[0].getTeam() == rc.getTeam()){
                         if(flagInfos[0].isPickedUp()){
                             locationGoing = flagInfos[0].getLocation();
                         }
@@ -548,21 +479,16 @@ public class Duck {
                             directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
                             locationGoing = Lib.noLoc;
                         }
-                   //}
-                }
-
-                if(rc.canSenseLocation(locationGoing)){
-                    if(rc.canSenseRobotAtLocation(locationGoing)){
-                        if(!rc.senseRobotAtLocation(locationGoing).hasFlag) {
-                            job = Jobs.IDLING;
-                            directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
-                            locationGoing = Lib.noLoc;
-                        }
                     }
+                }
+                if(rc.readSharedArray(8) == 0){
+                    job = Jobs.IDLING;
+                    directionGoing = rc.getLocation().directionTo(lib.getNearestEnemyCenter(rc.getLocation()));
+                    locationGoing = Lib.noLoc;
                 }
             }
 
-            placeTraps();
+
             healOrAttack();
             lib.enemySpawnPoints(rc.getLocation());
 
@@ -570,7 +496,7 @@ public class Duck {
 
             senseFlags();
 
-            if(rc.getRoundNum() % 20 == 0) lib.printFlags();
+           // if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(23);
 
            // rc.setIndicatorString(Arrays.toString(rc.senseNearbyFlags(-1, rc.getTeam().opponent())));
         }
@@ -594,6 +520,8 @@ public class Duck {
 
     void move() throws GameActionException {
 
+        fill();
+
         if(rc.getRoundNum() < 200) {
             stopMoving = lib.isNearDam(rc.getLocation());
         }
@@ -612,19 +540,18 @@ public class Duck {
             }
             if (locationGoing == Lib.noLoc) {
                 if (directionGoing != Direction.CENTER) {
-                    nav.goTo(rc.getLocation().add(directionGoing));
+                    nav.goTo(directionGoing);
                     //turnsMovingInDirection++;
                 }
             } else {
                 if (job == Jobs.GUARDINGFLAGHOLDER) {
-                    if (rc.getLocation().distanceSquaredTo(locationGoing) <= 15 || lib.contains(rc.getAllySpawnLocations(), rc.getLocation())) {
+                    if (rc.getLocation().distanceSquaredTo(locationGoing) <= 15) {
                         nav.goTo(locationGoing.directionTo(rc.getLocation()));
                     }
                 }
                 lastMovement = nav.goTo(locationGoing, false); //if we need to save bytecode, well this is where we're saving it
-                lastLocationGoing = locationGoing;
                 if (!lastMovement) {
-                    lastMovement = nav.goTo(locationGoing, false);
+                    //lastMovement = nav.bugNavTo(locationGoing);
                     if (!lastMovement) {
                     //    lastMovement = nav.navTo(locationGoing);
                         if (!lastMovement) {
@@ -638,9 +565,9 @@ public class Duck {
     }
 
     void fill() throws GameActionException {
-        for(Direction dir : Lib.directions) {
-            if (rc.canFill(rc.getLocation().add(dir))) {
-                rc.fill(rc.getLocation().add(dir));
+        if(rc.canFill(rc.getLocation().add(rc.getLocation().directionTo(locationGoing)))){
+            if(rc.getCrumbs() > 500){
+                rc.fill(rc.getLocation().add(rc.getLocation().directionTo(locationGoing)));
             }
         }
     }
@@ -654,7 +581,6 @@ public class Duck {
                     rc.attack(enemyWithFlagNearby);
                 }
             }
-            robotInfos = lib.sort(robotInfos);
             if(rc.canAttack(robotInfos[0].getLocation())){
                 rc.attack(robotInfos[0].getLocation());
             }
@@ -663,7 +589,6 @@ public class Duck {
 
     void heal() throws GameActionException{
         RobotInfo[] robotInfos = rc.senseNearbyRobots(-1, rc.getTeam());
-        robotInfos = lib.sortByXP(robotInfos);
         if(robotInfos.length > 0){
             if(rc.canHeal(robotInfos[0].getLocation())){
                 rc.heal(robotInfos[0].getLocation());
@@ -722,38 +647,13 @@ public class Duck {
     }
 
     void placeTraps() throws GameActionException {
-        if(job == Jobs.IDLING || job == Jobs.GUARDINGFLAGHOLDER){
-            for(MapLocation loc1 : lib.enemySpawnZones()) {
-                for (MapInfo loc : rc.senseNearbyMapInfos()) {
-                    if (!loc.isWater() && !loc.isWall()) {
-                        if (loc1.distanceSquaredTo(rc.getLocation()) < 10) {
-                            if (rc.canBuild(TrapType.STUN, loc.getMapLocation())) {
-                                rc.build(TrapType.STUN, loc.getMapLocation());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if(job == Jobs.GUARDINGFLAGHOLDER && rc.getLocation().distanceSquaredTo(locationGoing) < 40){
-            RobotInfo robotInfo = rc.senseRobotAtLocation(rc.getLocation().add(lastLocationGoing.directionTo(rc.getLocation())));
-            if(robotInfo == null){
-                for(Direction dir : Lib.directions){
-                    if(rc.canBuild(TrapType.STUN, rc.getLocation().add(dir))){
-                        rc.build(TrapType.STUN, rc.getLocation().add(dir));
-                    }
-                }
-            }
-        }
-
         if(rc.getRoundNum() < 200) {
             if (lib.isNearDam(rc.getLocation())) {
-                    if (rc.canBuild(TrapType.STUN, rc.getLocation())){
-                        rc.build(TrapType.STUN, rc.getLocation());
+                    if (rc.canBuild(TrapType.EXPLOSIVE, rc.getLocation())){
+                        rc.build(TrapType.EXPLOSIVE, rc.getLocation());
                     }
             }
         }
-
         if(job == Jobs.GUARDINGFLAG){
             for(Direction dir : Lib.directions){
                 if(rc.canBuild(TrapType.STUN, rc.getLocation().add(dir))){
@@ -761,17 +661,6 @@ public class Duck {
                 }
             }
         }
-
-        if(job == Jobs.DEFENDINGFLAG || job == Jobs.GETTINGFLAG){ //more enemies?? build explosive
-            if(rc.getLocation().distanceSquaredTo(locationGoing) < 40){
-                for(Direction dir : lib.startDirList(lib.dirToIndex(rc.getLocation().directionTo(locationGoing)), 0)){
-                    if(rc.canBuild(TrapType.STUN, rc.getLocation().add(dir))){
-                        rc.build(TrapType.STUN, rc.getLocation().add(dir));
-                    }
-                }
-            }
-        }
-
 
     }
 
@@ -798,30 +687,18 @@ public class Duck {
                     if (holder != null) {
                         if (holder.getTeam() == rc.getTeam()) {
                             if (!holder.hasFlag) {
-                                if(flagCarrierIndex == 0){
-                                    flagCarrierIndex = lib.getFlagIndex(flag);
-                                }
                                 lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                                 flag = Lib.noLoc;
                             }
                         } else {
-                            if(flagCarrierIndex == 0){
-                                flagCarrierIndex = lib.getFlagIndex(flag);
-                            }
                             lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                             flag = Lib.noLoc;
                         }
                     } else {
-                        if(flagCarrierIndex == 0){
-                            flagCarrierIndex = lib.getFlagIndex(flag);
-                        }
                         lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                         flag = Lib.noLoc;
                     }
                 } else {
-                    if(flagCarrierIndex == 0){
-                        flagCarrierIndex = lib.getFlagIndex(flag);
-                    }
                     lib.setEnemyFlagLoc(Lib.noLoc, flagCarrierIndex);
                     flag = Lib.noLoc;
                 }
