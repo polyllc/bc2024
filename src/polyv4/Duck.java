@@ -496,7 +496,7 @@ public class Duck {
 
             senseFlags();
 
-            if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(23);
+           // if(rc.getRoundNum() % 20 == 0) lib.printSharedArray(23);
 
            // rc.setIndicatorString(Arrays.toString(rc.senseNearbyFlags(-1, rc.getTeam().opponent())));
         }

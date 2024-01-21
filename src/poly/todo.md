@@ -1,13 +1,15 @@
 # todo
 - add the possibility that the enemy flag could move
-- (L) brute force way through many ducks 
-- (M) if an idling duck sees a flag being taken, alert!
+- (L) brute force way through many ducks
 - (J) place traps on enemy spawn points
-- (M) make more ducks defend!
 - (M) make one group defend at all times
-- (M) defend flags that are moving
 - (M) if there are enemy ducks nearby, spawn near them
-- (M) heal ducks with the highest xp
+- make the ducks better at actually guarding the flag holder, kill ducks better
+- pro rate defending ducks
+- send ducks to all places to get flags, maybe they aren't defending there??
+- when bringing back flags, AVOID ENEMY CENTERS PRETTY PLEASE
+- when bringing back flags, go to the ally centers that are closest, and least amount of enemies
+
 
 # potentially
 - (L) change the navigation code to also implement the fact that it would take less time to dig over water than go around 

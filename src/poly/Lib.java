@@ -357,6 +357,10 @@ public class Lib {
         }
     }
 
+    public void printFlags() throws GameActionException {
+        System.out.println(Arrays.toString(Arrays.stream(new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)}).toArray()));
+    }
+
     public MapLocation getNearestFlagCarrier() throws GameActionException {
         MapLocation[] flags = new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)};
         if(flags[0].equals(new MapLocation(-1, -1))){
@@ -393,7 +397,7 @@ public class Lib {
     }
 
     public int getNextClearFlagIndex() throws GameActionException {
-        MapLocation[] flags = new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)};
+       // MapLocation[] flags = new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)};
         //System.out.println(Arrays.toString(flags));
         if(getEnemyFlagLoc(1).equals(noLoc) || getEnemyFlagLoc(1).equals(new MapLocation(-1,-1))) {
             return 1;
@@ -402,6 +406,22 @@ public class Lib {
         } else if(getEnemyFlagLoc(3).equals(noLoc)|| getEnemyFlagLoc(3).equals(new MapLocation(-1,-1))){
             return 3;
         } else if(getEnemyFlagLoc(4).equals(noLoc) || getEnemyFlagLoc(4).equals(new MapLocation(-1,-1))) {
+            return 4;
+        } else {
+            return 0;
+        }
+    }
+
+    public int getNextClearFlagIndex(MapLocation loc) throws GameActionException {
+     //   MapLocation[] flags = new MapLocation[]{getEnemyFlagLoc(1), getEnemyFlagLoc(2), getEnemyFlagLoc(3), getEnemyFlagLoc(4)};
+        //System.out.println(Arrays.toString(flags));
+        if(getEnemyFlagLoc(1).equals(noLoc) || getEnemyFlagLoc(1).equals(loc) || getEnemyFlagLoc(1).equals(new MapLocation(-1,-1))) {
+            return 1;
+        } else if(getEnemyFlagLoc(2).equals(noLoc) || getEnemyFlagLoc(2).equals(loc) || getEnemyFlagLoc(2).equals(new MapLocation(-1,-1))){
+            return 2;
+        } else if(getEnemyFlagLoc(3).equals(noLoc)|| getEnemyFlagLoc(3).equals(loc) ||getEnemyFlagLoc(3).equals(new MapLocation(-1,-1))){
+            return 3;
+        } else if(getEnemyFlagLoc(4).equals(noLoc) || getEnemyFlagLoc(4).equals(loc) || getEnemyFlagLoc(4).equals(new MapLocation(-1,-1))) {
             return 4;
         } else {
             return 0;
@@ -774,7 +794,7 @@ public class Lib {
         if(rc.getLocation().distanceSquaredTo(allys[2]) < 10){
             return 3;
         }
-        return 0;
+        return (int) (Math.floor(Math.random()*3)+1);
     }
 
     public MapLocation getEnemyWithFlagNearby(RobotInfo[] robots) throws GameActionException {
