@@ -24,4 +24,12 @@ Index 22: Ally Spawn Point 3 Y
 Index 24: Next Point To Spawn
 Index 23: Ally SkillType (even or odd)
 
+Index 57: Enemy Flag Spawn Location 1 X
+Index 58: Enemy Flag Spawn Location 1 Y
+Index 59: Enemy Flag Spawn Location 2 X
+Index 60: Enemy Flag Spawn Location 2 Y
+Index 61: Enemy Flag Spawn Location 3 X
+Index 62: Enemy Flag Spawn Location 3 Y
+Index 63: Enemy Spawn Point Done?
+
 
