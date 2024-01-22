@@ -171,6 +171,12 @@ public class Duck {
                 }
             }
 
+            /*if(rc.hasFlag())
+                for (MapInfo loc : rc.senseNearbyMapInfos()) {
+                    if(lib.isEnemyCenter(loc.getMapLocation())){
+
+                    }
+                }*/
 
 
 
@@ -323,6 +329,26 @@ public class Duck {
                     flagCarrierIndex = lib.getNextClearFlagIndex(locationGoing);
                 }
                 lib.setEnemyFlagLoc(rc.getLocation(), flagCarrierIndex);
+
+                for (MapInfo loc : rc.senseNearbyMapInfos()) {
+                    if(lib.isEnemyCenter(loc.getMapLocation())){
+                        //get loc of loc going
+                        //get loc of the current place
+                        //pythagorean of one left vs one right
+                        //locationGoing
+                        if ((Math.sqrt (Math.pow (rc.getLocation().x + 1, 2) + Math.pow (rc.getLocation().y, 2))) >
+                                (Math.sqrt (Math.pow (rc.getLocation().x - 1, 2) + Math.pow (rc.getLocation().y, 2)))) {
+                            nav.goTo(rc.getLocation().directionTo(locationGoing), false);
+                            //rc.move(Direction.EAST);
+                            //rc.getLocation().directionTo(locationGoing)
+                        }
+                        else{
+                            //rc.navTo
+                            //wedt
+                            nav.goTo(rc.getLocation().directionTo(locationGoing), true);
+                        }
+                    }
+                }
 
                 if(rc.getLocation().distanceSquaredTo(locationGoing) <= 2){
                     for(Direction dir : lib.startDirList(lib.dirToIndex(rc.getLocation().directionTo(locationGoing)), 0)){
