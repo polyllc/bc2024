@@ -555,25 +555,62 @@ public class Lib {
     // - same thing with x-axis
     // - what is really cool is that the code is the exact same, except the quadrants will be different depending on the symmetry
 
+
+    public void preliminaryAutofillEnemySpawnPoints() throws GameActionException {
+        for(MapLocation spawns : allySpawnZones()) {
+            int q = getQuadrant(spawns);
+            MapLocation origin = getOrigin(q);
+            int xOffset = spawns.x - origin.x;
+            int yOffset = spawns.y - origin.y;
+            int oppositeQ = 0;
+            if(q == 1){
+                oppositeQ = 3;
+            }
+            if(q == 2){
+                oppositeQ = 4;
+            }
+            if(q == 3){
+                oppositeQ = 1;
+            }
+            if(q == 4){
+                oppositeQ = 2;
+            }
+            MapLocation otherOrigin = getOrigin(oppositeQ);
+            int realX = 0;
+            int realY = 0;
+            switch (oppositeQ){
+                case 1: realX = otherOrigin.x + Math.abs(xOffset); realY = otherOrigin.y + Math.abs(yOffset); break;
+                case 2: realX = otherOrigin.x - Math.abs(xOffset); realY = otherOrigin.y + Math.abs(yOffset); break;
+                case 3: realX = otherOrigin.x - Math.abs(xOffset); realY = otherOrigin.y - Math.abs(yOffset); break;
+                case 4: realX = otherOrigin.x + Math.abs(xOffset); realY = otherOrigin.y - Math.abs(yOffset); break;
+            }
+            MapLocation enemyLoc = new MapLocation(realX, realY);
+            if (!isEnemyCenter(enemyLoc)) {
+                setEnemyCenter(enemyLoc);
+            }
+        }
+    }
     public void autofillEnemySpawnPoints(MapLocation loc) throws GameActionException {
         if(horizontalCalc(loc.add(rc.getLocation().directionTo(loc))) != noLoc){
             System.out.println("Using Horizontal Calculations: " + loc.add(rc.getLocation().directionTo(loc)));
             for(MapLocation spawns : allySpawnZones()) {
                 MapLocation enemyLoc = new MapLocation(spawns.x, rc.getMapHeight()-spawns.y);
-                if (!isEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)))) {
+                if (!isEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc))) || rc.readSharedArray(63) == 0) {
                     setEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)));
                 }
             }
+            rc.writeSharedArray(63, 1);
         }
 
         if(verticalCalc(loc.add(rc.getLocation().directionTo(loc))) != noLoc){
             System.out.println("Using Vertical   Calculations");
             for(MapLocation spawns : allySpawnZones()) {
                 MapLocation enemyLoc = new MapLocation(rc.getMapHeight()-spawns.x, spawns.y);
-                if (!isEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)))) {
+                if (!isEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc))) || rc.readSharedArray(63) == 0) {
                     setEnemyCenter(enemyLoc.add(rc.getLocation().directionTo(loc)));
                 }
             }
+            rc.writeSharedArray(63, 1);
         }
 
         if(rotationalCalc(loc) != noLoc){
@@ -606,10 +643,11 @@ public class Lib {
                     case 4: realX = otherOrigin.x + Math.abs(xOffset); realY = otherOrigin.y - Math.abs(yOffset); break;
                 }
                 MapLocation enemyLoc = new MapLocation(realX, realY);
-                if (!isEnemyCenter(enemyLoc)) {
+                if (!isEnemyCenter(enemyLoc) || rc.readSharedArray(63) == 0) {
                     setEnemyCenter(enemyLoc);
                 }
             }
+            rc.writeSharedArray(63, 1);
         }
     }
 
