@@ -29,6 +29,7 @@ public class Duck {
 
     boolean stopMoving = false;
 
+
     int groupNumber = 0;
 
     int spawnRound = 0;
@@ -152,6 +153,27 @@ public class Duck {
 
                 }
             } */
+
+            // set crumb limit to 500 unless there's a large group if enemies incoming
+            // then drop explosive traps
+
+            // if big group of enemies and crumbs > 500
+            // place explosive trap
+
+            if(rc.getTeam() == Team.A){
+                if(rc.senseNearbyRobots(-1, Team.B).length > 6 && rc.getCrumbs() > 500){
+                    rc.build(TrapType.EXPLOSIVE, rc.getLocation());
+                }
+            }
+            else {
+                if(rc.senseNearbyRobots(-1, Team.A).length > 6 && rc.getCrumbs() > 500){
+                    rc.build(TrapType.EXPLOSIVE, rc.getLocation());
+                }
+            }
+
+
+
+
 
 
             if(job == Jobs.IDLING) {

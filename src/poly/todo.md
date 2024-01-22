@@ -4,6 +4,7 @@
 - (J) place traps on enemy spawn points
 - (M) make one group defend at all times
 - (M) if there are enemy ducks nearby, spawn near them
+- (J) crumb limit 500 unless there's a big group of enemies then place explosive trap
 - make the ducks better at actually guarding the flag holder, kill ducks better
 - pro rate defending ducks
 - send ducks to all places to get flags, maybe they aren't defending there??
